@@ -5,18 +5,18 @@
 <title>Payment</title>
 
 <style>
-/* তোমার original CSS unchanged */
 *{margin:0;padding:0;box-sizing:border-box;}
 
-html{
+html,body{
 height:100%;
+min-height:100vh;
+min-height:100dvh;
 background:#0f2027;
 }
 
 body{
-min-height:100%;
-background:linear-gradient(135deg,#0f2027,#16222a,#203a43);
 font-family:Segoe UI;
+background:linear-gradient(135deg,#0f2027,#16222a,#203a43);
 color:white;
 padding:40px 20px env(safe-area-inset-bottom);
 }
@@ -142,7 +142,7 @@ let basePrice=parseInt(product.price);
 
 document.getElementById("productInfo").innerHTML=
 "<h3>"+product.title+"</h3>"+
-"<p>"+product.details+"</p>"+
+"<p>"+(product.details || "")+"</p>"+
 "<p class='price'>৳"+basePrice+"</p>";
 
 window.confirmOrder=async function(){
@@ -164,7 +164,7 @@ discount=5;
 
 let finalAmount=basePrice-discount;
 
-// Save order to Firebase
+try{
 await addDoc(collection(db,"orders"),{
 name:name,
 user:user,
@@ -174,8 +174,11 @@ trx:trx,
 coupon:coupon || "None",
 date:new Date()
 });
+}catch(e){
+alert("Firebase error: "+e.message);
+return;
+}
 
-// WhatsApp Message
 let message="Name: "+name+
 "%0ANumber: "+user+
 "%0AProduct: "+product.title+
@@ -183,9 +186,9 @@ let message="Name: "+name+
 "%0ATRX: "+trx+
 "%0ACoupon: "+(coupon||"None");
 
-window.open("https://wa.me/8801607254046?text="+message,"_blank");
+/* DIRECT REDIRECT (NO BLOCK ISSUE) */
+window.location.href="https://wa.me/8801607254046?text="+message;
 
-window.location="home.html";
 }
 
 window.goBack=function(){
