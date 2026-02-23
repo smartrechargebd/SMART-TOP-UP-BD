@@ -20,12 +20,12 @@
 
 </div>
 
-<!-- RATING -->
-<div class="rating">
-⭐ 4.8 / 5 (2,349 Reviews)
+<!-- ORDER COUNTER -->
+<div id="orderCounter" class="rating">
+Total Orders: Loading...
 </div>
 
-<!-- PRODUCT SECTION -->
+<!-- PRODUCT GRID -->
 <div id="productContainer" class="product-grid"></div>
 
 <script type="module">
@@ -37,23 +37,25 @@ if(sessionStorage.getItem("role") !== "user"){
     window.location.href = "index.html";
 }
 
-const container = document.getElementById("productContainer");
+const productContainer = document.getElementById("productContainer");
+const orderCounter = document.getElementById("orderCounter");
 
+// Load Products
 async function loadProducts(){
 
-    container.innerHTML = `
+    productContainer.innerHTML = `
     <div style="text-align:center;padding:30px;opacity:.7">
     Loading products...
     </div>
     `;
 
     const snapshot = await getDocs(collection(db,"products"));
-    container.innerHTML = "";
+    productContainer.innerHTML = "";
 
     if(snapshot.empty){
-        container.innerHTML = `
+        productContainer.innerHTML = `
         <div style="text-align:center;padding:30px;opacity:.7">
-        No products added yet.
+        No products available.
         </div>
         `;
         return;
@@ -63,7 +65,7 @@ async function loadProducts(){
 
         const data = docSnap.data();
 
-        container.innerHTML += `
+        productContainer.innerHTML += `
         <div class="card">
 
             <img src="${data.image}" class="product-img">
@@ -87,17 +89,26 @@ async function loadProducts(){
     });
 }
 
+// Load Order Counter
+async function loadOrderCount(){
+    const snapshot = await getDocs(collection(db,"orders"));
+    orderCounter.innerText = "Total Orders: " + snapshot.size;
+}
+
+// Buy Product
 window.buyProduct = function(id){
     sessionStorage.setItem("selectedProductId", id);
     window.location.href = "payment.html";
 }
 
+// Logout
 window.logout = function(){
     sessionStorage.clear();
     window.location.href = "index.html";
 }
 
 loadProducts();
+loadOrderCount();
 
 </script>
 
