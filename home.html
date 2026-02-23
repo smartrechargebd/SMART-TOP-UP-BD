@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Home - Smart Recharge BD</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-body">
+
+<div class="top-bar">
+    <div class="logo-wrap">
+        <img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="small-logo">
+        <h3>Smart Recharge BD</h3>
+    </div>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<div class="rating">
+⭐ 4.8 / 5 (2,349 Reviews)
+</div>
+
+<div id="productContainer" class="product-grid"></div>
+
+<script type="module">
+
+import { db, collection, getDocs } from "./firebase.js";
+
+if(sessionStorage.getItem("role") !== "user"){
+    window.location.href = "index.html";
+}
+
+const container = document.getElementById("productContainer");
+
+async function loadProducts(){
+    container.innerHTML = "Loading...";
+
+    const snapshot = await getDocs(collection(db,"products"));
+    container.innerHTML = "";
+
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+
+        container.innerHTML += `
+        <div class="card">
+            <img src="${data.image}" class="product-img">
+            <div class="card-content">
+                <h3>${data.title}</h3>
+                <p>${data.details}</p>
+                <div class="price">৳${data.price}</div>
+                <button onclick="buyProduct('${docSnap.id}')">Buy Now</button>
+            </div>
+        </div>
+        `;
+    });
+}
+
+window.buyProduct = function(id){
+    sessionStorage.setItem("selectedProductId", id);
+    window.location.href = "payment.html";
+}
+
+window.logout = function(){
+    sessionStorage.clear();
+    window.location.href = "index.html";
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
