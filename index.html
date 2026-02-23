@@ -1,27 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Recharge BD</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="login-body">
+<body class="login-page">
 
-<div class="login-wrapper">
+<div class="login-box">
 
-    <div class="login-card">
+    <img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="login-logo">
 
-        <img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="logo-big">
+    <h2>Smart Recharge BD</h2>
+    <p>Secure Login</p>
 
-        <h2>Smart Recharge BD</h2>
-        <p class="subtitle">Secure Recharge Portal</p>
+    <input type="password" id="loginInput" placeholder="Enter 11 digit mobile or admin password">
 
-        <input type="password" id="loginInput" placeholder="Enter Mobile Number">
-
-        <button onclick="login()">Continue</button>
-
-    </div>
+    <button onclick="login()">Continue</button>
 
 </div>
 
@@ -29,18 +25,15 @@
 function login(){
     const input = document.getElementById("loginInput").value.trim();
 
-    // Admin Hidden Login
     if(input === "admin@2026@"){
         sessionStorage.setItem("role","admin");
-        window.location.href = "admin.html";
+        window.location.href="admin.html";
         return;
     }
 
-    // User Login (11 digit)
     if(/^\d{11}$/.test(input)){
         sessionStorage.setItem("role","user");
-        sessionStorage.setItem("userNumber", input);
-        window.location.href = "home.html";
+        window.location.href="home.html";
         return;
     }
 
