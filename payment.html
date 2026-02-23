@@ -2,100 +2,194 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Payment - Smart Recharge BD</title>
-<link rel="stylesheet" href="style.css">
+<title>Payment</title>
+
+<style>
+/* তোমার original CSS unchanged */
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html{
+height:100%;
+background:#0f2027;
+}
+
+body{
+min-height:100%;
+background:linear-gradient(135deg,#0f2027,#16222a,#203a43);
+font-family:Segoe UI;
+color:white;
+padding:40px 20px env(safe-area-inset-bottom);
+}
+
+.wrapper{
+max-width:420px;
+margin:auto;
+}
+
+.card{
+background:rgba(0,0,0,0.45);
+backdrop-filter:blur(15px);
+padding:25px;
+border-radius:20px;
+box-shadow:0 0 30px rgba(0,255,150,.25);
+}
+
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:20px;
+}
+
+.logo img{
+width:42px;
+}
+
+.price{
+color:#00ff99;
+font-size:20px;
+font-weight:bold;
+margin-top:8px;
+}
+
+input{
+width:100%;
+padding:14px;
+margin-top:14px;
+border:none;
+border-radius:12px;
+background:rgba(0,0,0,0.75);
+color:white;
+font-size:15px;
+outline:none;
+}
+
+input::placeholder{
+color:rgba(255,255,255,.5);
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:14px;
+font-weight:bold;
+cursor:pointer;
+margin-top:16px;
+font-size:15px;
+}
+
+.confirm{
+background:linear-gradient(45deg,#00e676,#00c853);
+color:black;
+}
+
+.back{
+background:linear-gradient(45deg,#ff1744,#d50000);
+color:white;
+}
+</style>
 </head>
 
-<body class="payment-body">
+<body>
 
-<div class="payment-box">
+<div class="wrapper">
+<div class="card">
 
-<h2>Complete Payment</h2>
+<div class="logo">
+<img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png">
+<h3>Smart Recharge BD</h3>
+</div>
 
 <div id="productInfo"></div>
 
-<div class="payment-info">
-Send Money to: <b>01861316505</b><br>
-(bKash / Nagad)
+<p style="margin-top:15px;"><b>bKash / Nagad:</b> 01861316505</p>
+
+<input id="name" placeholder="Your Name">
+<input id="trx" placeholder="Transaction ID">
+<input id="coupon" placeholder="Coupon Code (Optional)">
+
+<button class="confirm" onclick="confirmOrder()">Confirm Payment</button>
+<button class="back" onclick="goBack()">Back</button>
+
 </div>
-
-<input type="text" id="customerName" placeholder="Your Name">
-<input type="text" id="trxId" placeholder="Transaction ID">
-<input type="text" id="coupon" placeholder="Coupon Code (Optional)">
-
-<button onclick="confirmPayment()">Confirm Payment</button>
-<button class="back-btn" onclick="goBack()">Back</button>
-
 </div>
 
 <script type="module">
 
-import { db, collection, addDoc, doc, getDoc } from "./firebase.js";
+import { db, doc, getDoc, collection, addDoc } from "./firebase.js";
 
-if(sessionStorage.getItem("role") !== "user"){
-    window.location.href = "index.html";
+if(sessionStorage.getItem("role")!=="user"){
+window.location="index.html";
 }
 
-const productId = sessionStorage.getItem("selectedProductId");
+let productId=sessionStorage.getItem("selectedProductId");
 
 if(!productId){
-    window.location.href = "home.html";
+window.location="home.html";
 }
 
-const productRef = doc(db,"products",productId);
-const productSnap = await getDoc(productRef);
-const productData = productSnap.data();
+let productRef=doc(db,"products",productId);
+let productSnap=await getDoc(productRef);
 
-let finalPrice = parseFloat(productData.price);
-
-document.getElementById("productInfo").innerHTML = `
-<h3>${productData.title}</h3>
-<p>${productData.details}</p>
-<p><b>Price:</b> ৳<span id="priceValue">${finalPrice}</span></p>
-`;
-
-window.confirmPayment = async function(){
-
-    const name = document.getElementById("customerName").value.trim();
-    const trx = document.getElementById("trxId").value.trim();
-    const coupon = document.getElementById("coupon").value.trim();
-
-    if(!name || !trx){
-        alert("Fill all fields");
-        return;
-    }
-
-    // Coupon Logic
-    let discount = 0;
-    if(coupon === "SR50"){
-        discount = finalPrice * 0.5;
-    }
-
-    const payAmount = finalPrice - discount;
-
-    // Save Order to Firebase
-    await addDoc(collection(db,"orders"),{
-        name: name,
-        product: productData.title,
-        price: payAmount,
-        trx: trx,
-        date: new Date()
-    });
-
-    const message =
-`New Order Confirmed!
-
-Name: ${name}
-Product: ${productData.title}
-Price: ৳${payAmount}
-Transaction ID: ${trx}`;
-
-    window.location.href =
-    "https://wa.me/8801607254046?text=" + encodeURIComponent(message);
+if(!productSnap.exists()){
+alert("Product not found");
+window.location="home.html";
 }
 
-window.goBack = function(){
-    window.location.href = "home.html";
+let product=productSnap.data();
+let basePrice=parseInt(product.price);
+
+document.getElementById("productInfo").innerHTML=
+"<h3>"+product.title+"</h3>"+
+"<p>"+product.details+"</p>"+
+"<p class='price'>৳"+basePrice+"</p>";
+
+window.confirmOrder=async function(){
+
+let name=document.getElementById("name").value.trim();
+let trx=document.getElementById("trx").value.trim();
+let user=sessionStorage.getItem("user");
+let coupon=document.getElementById("coupon").value.trim();
+
+if(!name || !trx){
+alert("Fill all fields");
+return;
+}
+
+let discount=0;
+if(coupon==="SR50"){
+discount=5;
+}
+
+let finalAmount=basePrice-discount;
+
+// Save order to Firebase
+await addDoc(collection(db,"orders"),{
+name:name,
+user:user,
+product:product.title,
+price:finalAmount,
+trx:trx,
+coupon:coupon || "None",
+date:new Date()
+});
+
+// WhatsApp Message
+let message="Name: "+name+
+"%0ANumber: "+user+
+"%0AProduct: "+product.title+
+"%0AFinal Price: "+finalAmount+
+"%0ATRX: "+trx+
+"%0ACoupon: "+(coupon||"None");
+
+window.open("https://wa.me/8801607254046?text="+message,"_blank");
+
+window.location="home.html";
+}
+
+window.goBack=function(){
+window.location="home.html";
 }
 
 </script>
