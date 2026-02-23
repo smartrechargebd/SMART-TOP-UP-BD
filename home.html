@@ -2,29 +2,37 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Home - Smart Recharge BD</title>
+<title>Smart Recharge BD - Home</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="home-body">
 
+<!-- TOP BAR -->
 <div class="top-bar">
+
     <div class="logo-wrap">
         <img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="small-logo">
-        <h3>Smart Recharge BD</h3>
+        <span class="brand-name">Smart Recharge BD</span>
     </div>
-    <button onclick="logout()">Logout</button>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+
 </div>
 
+<!-- RATING -->
 <div class="rating">
 ⭐ 4.8 / 5 (2,349 Reviews)
 </div>
 
+<!-- PRODUCT SECTION -->
 <div id="productContainer" class="product-grid"></div>
 
 <script type="module">
 
 import { db, collection, getDocs } from "./firebase.js";
 
+// Secure Access
 if(sessionStorage.getItem("role") !== "user"){
     window.location.href = "index.html";
 }
@@ -32,23 +40,48 @@ if(sessionStorage.getItem("role") !== "user"){
 const container = document.getElementById("productContainer");
 
 async function loadProducts(){
-    container.innerHTML = "Loading...";
+
+    container.innerHTML = `
+    <div style="text-align:center;padding:30px;opacity:.7">
+    Loading products...
+    </div>
+    `;
 
     const snapshot = await getDocs(collection(db,"products"));
     container.innerHTML = "";
 
+    if(snapshot.empty){
+        container.innerHTML = `
+        <div style="text-align:center;padding:30px;opacity:.7">
+        No products added yet.
+        </div>
+        `;
+        return;
+    }
+
     snapshot.forEach(docSnap => {
+
         const data = docSnap.data();
 
         container.innerHTML += `
         <div class="card">
+
             <img src="${data.image}" class="product-img">
+
             <div class="card-content">
+
                 <h3>${data.title}</h3>
+
                 <p>${data.details}</p>
+
                 <div class="price">৳${data.price}</div>
-                <button onclick="buyProduct('${docSnap.id}')">Buy Now</button>
+
+                <button onclick="buyProduct('${docSnap.id}')">
+                Buy Now
+                </button>
+
             </div>
+
         </div>
         `;
     });
