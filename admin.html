@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+padding:20px;
+}
+
+h2{margin-top:0;}
+
+.section{
+background:rgba(255,255,255,0.05);
+padding:20px;
+border-radius:15px;
+margin-bottom:25px;
+backdrop-filter:blur(10px);
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:none;
+border-radius:8px;
+}
+
+button{
+padding:8px 12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin:5px 3px;
+font-weight:bold;
+}
+
+.saveBtn{background:#00e676;}
+.deleteBtn{background:red;color:white;}
+.editBtn{background:orange;color:white;}
+.logoutBtn{background:red;color:white;float:right;}
+.passBtn{background:#00c853;color:white;}
+</style>
+</head>
+
+<body>
+
+<h2>Admin Dashboard 
+<button class="logoutBtn" onclick="logout()">Logout</button>
+</h2>
+
+<div class="section">
+<h3>Add / Edit Package</h3>
+
+<input type="hidden" id="editId">
+
+<input id="title" placeholder="Title">
+<input id="details" placeholder="Details">
+<input id="price" placeholder="Price">
+<input id="image" placeholder="Image URL">
+
+<select id="badge">
+<option value="">No Badge</option>
+<option value="HOT">HOT</option>
+<option value="OFFER">OFFER</option>
+</select>
+
+<button class="saveBtn" onclick="saveProduct()">Save Package</button>
+</div>
+
+<div class="section">
+<h3>All Packages</h3>
+<div id="list"></div>
+</div>
+
+<div class="section">
+<h3>Change Admin Password</h3>
+<input type="password" id="newPass" placeholder="New Password">
+<button class="passBtn" onclick="changePassword()">Change Password</button>
+</div>
+
+<script type="module">
+
+import { db, collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "./firebase.js";
+
+if(sessionStorage.getItem("role")!=="admin"){
+window.location="index.html";
+}
+
+let editId=null;
+
+async function display(){
+const snapshot=await getDocs(collection(db,"products"));
+let box=document.getElementById("list");
+box.innerHTML="";
+
+snapshot.forEach(docSnap=>{
+let p=docSnap.data();
+let id=docSnap.id;
+
+box.innerHTML+=`
+<div style="background:#111;padding:15px;border-radius:10px;margin:10px 0;">
+<b>${p.title}</b><br>
+${p.details || ""}<br>
+৳${p.price}<br>
+Badge: ${p.badge || "None"}<br>
+
+<button class="editBtn" onclick="editProduct('${id}','${p.title}','${p.details || ""}','${p.price}','${p.badge || ""}','${p.image || ""}')">Edit</button>
+<button class="deleteBtn" onclick="deleteProduct('${id}')">Delete</button>
+</div>
+`;
+});
+}
+
+window.saveProduct=async function(){
+
+let title=document.getElementById("title").value;
+let details=document.getElementById("details").value;
+let price=document.getElementById("price").value;
+let badge=document.getElementById("badge").value;
+let image=document.getElementById("image").value;
+
+if(title==="" || price===""){
+alert("Title & Price Required");
+return;
+}
+
+if(editId){
+await updateDoc(doc(db,"products",editId),{
+title,details,price,badge,image
+});
+editId=null;
+}else{
+await addDoc(collection(db,"products"),{
+title,details,price,badge,image
+});
+}
+
+clearForm();
+display();
+}
+
+window.editProduct=function(id,title,details,price,badge,image){
+editId=id;
+document.getElementById("title").value=title;
+document.getElementById("details").value=details;
+document.getElementById("price").value=price;
+document.getElementById("badge").value=badge;
+document.getElementById("image").value=image;
+}
+
+window.deleteProduct=async function(id){
+if(confirm("Delete this package?")){
+await deleteDoc(doc(db,"products",id));
+display();
+}
+}
+
+function clearForm(){
+document.getElementById("title").value="";
+document.getElementById("details").value="";
+document.getElementById("price").value="";
+document.getElementById("badge").value="";
+document.getElementById("image").value="";
+}
+
+window.changePassword=function(){
+let newPass=document.getElementById("newPass").value;
+
+if(newPass.length<5){
+alert("Password too short");
+return;
+}
+
+localStorage.setItem("adminPass",newPass);
+alert("Password Updated Successfully");
+document.getElementById("newPass").value="";
+}
+
+window.logout=function(){
+sessionStorage.clear();
+window.location="index.html";
+}
+
+display();
+
+</script>
+
+</body>
+</html>
