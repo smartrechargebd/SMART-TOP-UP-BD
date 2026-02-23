@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Smart Recharge BD</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+
+<div class="login-container">
+
+    <div class="login-card">
+        
+        <img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="logo">
+
+        <h2>Smart Recharge BD</h2>
+        <p class="subtitle">Secure Login</p>
+
+        <input type="password" id="loginInput" placeholder="Enter 11 digit number">
+
+        <button onclick="login()">Continue</button>
+
+    </div>
+
+</div>
+
+<script>
+function login(){
+    const input = document.getElementById("loginInput").value.trim();
+
+    // Hidden Admin Access
+    if(input === "admin@2026@"){
+        sessionStorage.setItem("role","admin");
+        window.location.href = "admin.html";
+        return;
+    }
+
+    // User Login (11 digit)
+    if(/^\d{11}$/.test(input)){
+        sessionStorage.setItem("role","user");
+        sessionStorage.setItem("userNumber", input);
+        window.location.href = "home.html";
+        return;
+    }
+
+    alert("Invalid Login");
+}
+</script>
+
+</body>
+</html>
