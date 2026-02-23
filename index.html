@@ -1,43 +1,197 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Smart Recharge BD</title>
-<link rel="stylesheet" href="style.css">
-</head>
 
-<body class="login-page">
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+html,body{
+height:100%;
+background:#0f2027;
+overflow:hidden;
+}
+
+body{
+font-family:Segoe UI, sans-serif;
+background:linear-gradient(135deg,#0f2027,#16222a,#203a43);
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+min-height:100dvh;
+color:white;
+position:relative;
+}
+
+/* Animated Background */
+.background{
+position:absolute;
+width:200%;
+height:200%;
+background:
+radial-gradient(circle at 30% 30%, rgba(0,255,150,.15), transparent 40%),
+radial-gradient(circle at 70% 70%, rgba(0,200,255,.15), transparent 40%);
+animation:moveBg 12s linear infinite;
+z-index:0;
+pointer-events:none;
+}
+
+@keyframes moveBg{
+0%{transform:translate(0,0);}
+50%{transform:translate(-50px,-50px);}
+100%{transform:translate(0,0);}
+}
+
+/* Login Box */
+.login-box{
+width:100%;
+max-width:380px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(14px);
+border-radius:20px;
+padding:40px 25px;
+text-align:center;
+box-shadow:0 0 25px rgba(0,255,150,.3);
+animation:fadeIn .8s ease;
+position:relative;
+z-index:2;
+}
+
+/* Glow Border */
+.login-box::after{
+content:"";
+position:absolute;
+inset:0;
+border-radius:20px;
+padding:2px;
+background:linear-gradient(45deg,#00ff99,#00c853,#00ff99);
+-webkit-mask:
+linear-gradient(#000 0 0) content-box,
+linear-gradient(#000 0 0);
+-webkit-mask-composite:xor;
+mask-composite:exclude;
+animation:borderGlow 3s linear infinite;
+}
+
+@keyframes borderGlow{
+0%{filter:hue-rotate(0deg);}
+100%{filter:hue-rotate(360deg);}
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(20px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+.logo-img{
+width:90px;
+margin-bottom:12px;
+}
+
+.logo-text{
+font-size:22px;
+font-weight:bold;
+color:#00ff99;
+margin-bottom:8px;
+}
+
+.subtitle{
+opacity:.8;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:14px;
+border:none;
+border-radius:10px;
+margin:10px 0;
+font-size:15px;
+outline:none;
+position:relative;
+z-index:3;
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:10px;
+background:#00e676;
+color:black;
+font-weight:bold;
+font-size:16px;
+cursor:pointer;
+transition:.3s;
+position:relative;
+z-index:3;
+}
+
+button:hover{
+background:#00c853;
+}
+
+.footer{
+margin-top:20px;
+font-size:12px;
+opacity:.6;
+}
+</style>
+
+</head>
+<body>
+
+<div class="background"></div>
 
 <div class="login-box">
 
-    <img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="login-logo">
+<img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png" class="logo-img">
 
-    <h2>Smart Recharge BD</h2>
-    <p>Secure Login</p>
+<div class="logo-text">Smart Recharge BD</div>
+<div class="subtitle">Secure Login</div>
 
-    <input type="password" id="loginInput" placeholder="Enter 11 digit mobile or admin password">
+<input type="password" id="number" placeholder="Enter 11 digit number or admin password">
+<button onclick="login()">Continue</button>
 
-    <button onclick="login()">Continue</button>
+<div class="footer">Powered by SmartRecharge</div>
 
 </div>
 
 <script>
+let defaultPass="admin@2026@";
+
+if(!localStorage.getItem("adminPass")){
+localStorage.setItem("adminPass",defaultPass);
+}
+
 function login(){
-    const input = document.getElementById("loginInput").value.trim();
 
-    if(input === "admin@2026@"){
-        sessionStorage.setItem("role","admin");
-        window.location.href="admin.html";
-        return;
-    }
+let input=document.getElementById("number").value.trim();
+let savedPass=localStorage.getItem("adminPass");
 
-    if(/^\d{11}$/.test(input)){
-        sessionStorage.setItem("role","user");
-        window.location.href="home.html";
-        return;
-    }
+// Admin Login
+if(input===savedPass){
+sessionStorage.setItem("role","admin");
+window.location="admin.html";
+return;
+}
 
-    alert("Invalid Login");
+// User Login (11 digit)
+if(/^\d{11}$/.test(input)){
+sessionStorage.setItem("role","user");
+sessionStorage.setItem("user",input);
+window.location="home.html";
+return;
+}
+
+alert("Invalid Login");
+
 }
 </script>
 
