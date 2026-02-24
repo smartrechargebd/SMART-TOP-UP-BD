@@ -2,37 +2,65 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArenaXFF Admin</title>
+<title>ArenaXFF Super Admin</title>
 
 <style>
 body{
 margin:0;
 font-family:Segoe UI;
-background:#000;
+background:radial-gradient(circle at top,#140000,#000);
 color:white;
 }
 
 .header{
 text-align:center;
 padding:20px;
-font-size:24px;
+font-size:26px;
+font-weight:bold;
 color:red;
 text-shadow:0 0 20px red;
-font-weight:bold;
 }
 
 .container{
-max-width:1100px;
+max-width:1200px;
 margin:auto;
 padding:20px;
 }
 
-.card{
+.stats{
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.stat{
+flex:1;
+min-width:180px;
 background:#111;
 border:1px solid red;
-border-radius:15px;
 padding:15px;
+border-radius:12px;
+text-align:center;
+}
+
+.card{
+background:#0d0d0d;
+border:1px solid red;
+padding:15px;
+border-radius:12px;
 margin-bottom:15px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:none;
+background:#000;
+color:white;
+border:1px solid #333;
 }
 
 button{
@@ -42,42 +70,92 @@ color:white;
 border:none;
 border-radius:6px;
 cursor:pointer;
+margin-top:5px;
 }
 
-.statBox{
+.tabs{
 display:flex;
-gap:15px;
-flex-wrap:wrap;
+gap:10px;
 margin-bottom:20px;
+flex-wrap:wrap;
 }
 
-.stat{
+.tabBtn{
 flex:1;
-min-width:150px;
 background:#111;
 border:1px solid red;
-padding:15px;
-border-radius:10px;
+padding:10px;
+cursor:pointer;
 text-align:center;
 }
+
+.active{
+background:red;
+}
+
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
-<div class="header">🔥 ArenaXFF Admin Panel</div>
+<div class="header">🔥 ArenaXFF Super Admin</div>
 
 <div class="container">
 
-<div class="statBox">
+<div class="stats">
 <div class="stat">Total Orders<br><span id="totalOrders">0</span></div>
 <div class="stat">Pending<br><span id="pendingOrders">0</span></div>
 <div class="stat">Revenue<br>৳<span id="totalRevenue">0</span></div>
+<div class="stat">Products<br><span id="totalProducts">0</span></div>
 </div>
 
+<div class="tabs">
+<div class="tabBtn active" onclick="showTab('orders')">Orders</div>
+<div class="tabBtn" onclick="showTab('products')">Products</div>
+<div class="tabBtn" onclick="showTab('coupons')">Coupons</div>
+<div class="tabBtn" onclick="showTab('search')">Search</div>
+<div class="tabBtn" onclick="showTab('settings')">Settings</div>
+</div>
+
+<div id="ordersTab"></div>
+
+<div id="productsTab" class="hidden">
 <div class="card">
-<h3>Orders</h3>
-<div id="orderList"></div>
+<h3>Add Product</h3>
+<input id="pName" placeholder="Product Name">
+<input id="pPrice" placeholder="Price">
+<button onclick="addProduct()">Add Product</button>
+</div>
+<div id="productList"></div>
+</div>
+
+<div id="couponsTab" class="hidden">
+<div class="card">
+<h3>Create Coupon</h3>
+<input id="cCode" placeholder="Code">
+<input id="cValue" placeholder="Discount Value">
+<input id="cLimit" placeholder="Usage Limit">
+<button onclick="addCoupon()">Create Coupon</button>
+</div>
+<div id="couponList"></div>
+</div>
+
+<div id="searchTab" class="hidden">
+<div class="card">
+<h3>Search By Key</h3>
+<input id="searchKey" placeholder="Enter Key">
+<button onclick="searchOrder()">Search</button>
+<div id="searchResult"></div>
+</div>
+</div>
+
+<div id="settingsTab" class="hidden">
+<div class="card">
+<h3>Change Admin Password</h3>
+<input id="newPass" type="password" placeholder="New Password">
+<button onclick="changePassword()">Update</button>
+</div>
 </div>
 
 </div>
@@ -85,7 +163,7 @@ text-align:center;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
@@ -99,41 +177,135 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function loadOrders(){
-const snapshot = await getDocs(collection(db,"orders"));
-let total=0,pending=0,revenue=0;
-let html="";
+let adminPassword="AXFF2026";
 
-snapshot.forEach(docSnap=>{
-let data = docSnap.data();
+/* Tabs */
+window.showTab=function(tab){
+document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"));
+event.target.classList.add("active");
+["orders","products","coupons","search","settings"].forEach(t=>{
+document.getElementById(t+"Tab").classList.add("hidden");
+});
+document.getElementById(tab+"Tab").classList.remove("hidden");
+}
+
+/* Load Orders */
+async function loadOrders(){
+const snap=await getDocs(collection(db,"orders"));
+let total=0,pending=0,revenue=0,html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
 total++;
-if(data.status==="pending") pending++;
-revenue+=Number(data.price || 0);
+if(d.status==="pending") pending++;
+revenue+=Number(d.price||0);
 
 html+=`
 <div class="card">
-<b>${data.productName}</b><br>
-৳${data.price}<br>
-Status: ${data.status}<br>
+<b>${d.productName}</b> - ৳${d.price}<br>
+Method: ${d.paymentMethod}<br>
+TRX: ${d.transactionId}<br>
+Key: ${d.generatedKey}<br>
+Status: ${d.status}<br>
 <button onclick="approve('${docSnap.id}')">Approve</button>
-</div>
-`;
+<button onclick="reject('${docSnap.id}')">Reject</button>
+</div>`;
 });
-
-orderList.innerHTML=html;
+ordersTab.innerHTML=html;
 totalOrders.innerText=total;
 pendingOrders.innerText=pending;
 totalRevenue.innerText=revenue;
 }
 
 window.approve=async(id)=>{
-await updateDoc(doc(db,"orders",id),{
-status:"approved"
-});
+await updateDoc(doc(db,"orders",id),{status:"approved"});
 loadOrders();
 }
 
+window.reject=async(id)=>{
+await updateDoc(doc(db,"orders",id),{status:"rejected"});
 loadOrders();
+}
+
+/* Products */
+window.addProduct=async()=>{
+await addDoc(collection(db,"products"),{
+name:pName.value,
+price:pPrice.value
+});
+loadProducts();
+}
+
+async function loadProducts(){
+const snap=await getDocs(collection(db,"products"));
+totalProducts.innerText=snap.size;
+let html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`
+<div class="card">
+${d.name} - ৳${d.price}
+<button onclick="deleteProduct('${docSnap.id}')">Delete</button>
+</div>`;
+});
+productList.innerHTML=html;
+}
+
+window.deleteProduct=async(id)=>{
+await deleteDoc(doc(db,"products",id));
+loadProducts();
+}
+
+/* Coupons */
+window.addCoupon=async()=>{
+await addDoc(collection(db,"coupons"),{
+code:cCode.value,
+value:cValue.value,
+usageLimit:cLimit.value,
+used:0
+});
+loadCoupons();
+}
+
+async function loadCoupons(){
+const snap=await getDocs(collection(db,"coupons"));
+let html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`
+<div class="card">
+${d.code} - ${d.value} (Limit:${d.usageLimit})
+<button onclick="deleteCoupon('${docSnap.id}')">Delete</button>
+</div>`;
+});
+couponList.innerHTML=html;
+}
+
+window.deleteCoupon=async(id)=>{
+await deleteDoc(doc(db,"coupons",id));
+loadCoupons();
+}
+
+/* Search */
+window.searchOrder=async()=>{
+let q=query(collection(db,"orders"),where("generatedKey","==",searchKey.value));
+const snap=await getDocs(q);
+let html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`<div class="card">${d.productName} - ৳${d.price} - ${d.status}</div>`;
+});
+searchResult.innerHTML=html||"No Result";
+}
+
+/* Change Password */
+window.changePassword=function(){
+adminPassword=newPass.value;
+alert("Password Updated (Session Only)");
+}
+
+loadOrders();
+loadProducts();
+loadCoupons();
 
 </script>
 
