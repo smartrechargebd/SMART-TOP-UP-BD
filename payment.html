@@ -2,10 +2,11 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArenaXFF | Payment</title>
+<title>ArenaXFF | Secure Payment</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
+
 body{
 font-family:Segoe UI;
 background:radial-gradient(circle at top,#111,#000);
@@ -16,6 +17,7 @@ align-items:center;
 min-height:100vh;
 padding:20px;
 }
+
 .container{
 width:100%;
 max-width:420px;
@@ -24,7 +26,9 @@ border-radius:25px;
 padding:25px;
 box-shadow:0 0 40px rgba(255,0,0,.4);
 border:1px solid rgba(255,0,0,.3);
+transition:.3s;
 }
+
 .brand{
 text-align:center;
 font-size:24px;
@@ -32,6 +36,7 @@ font-weight:bold;
 color:#ff0000;
 margin-bottom:20px;
 }
+
 .methodBtn{
 width:100%;
 padding:15px;
@@ -42,25 +47,30 @@ font-weight:bold;
 font-size:16px;
 cursor:pointer;
 }
+
 .bkash{
 background:linear-gradient(45deg,#ff0055,#ff0000);
 color:white;
 }
+
 .nagad{
 background:linear-gradient(45deg,#ff6600,#ff3300);
 color:white;
 }
+
 .paymentBox{
 display:none;
 margin-top:20px;
 }
+
 .amount{
 font-size:26px;
 text-align:center;
 margin:10px 0;
-color:#ff3333;
+color:#00ffcc;
 font-weight:bold;
 }
+
 .number{
 background:#111;
 padding:12px;
@@ -69,10 +79,50 @@ text-align:center;
 margin-bottom:15px;
 border:1px solid #ff0000;
 }
-.error{
-color:red;
+
+input{
+width:100%;
+padding:14px;
+margin-top:12px;
+border-radius:14px;
+border:none;
+background:#111;
+color:white;
+border:1px solid #333;
+}
+
+.verifyBtn{
+width:100%;
+padding:15px;
+margin-top:18px;
+border:none;
+border-radius:18px;
+background:linear-gradient(45deg,#ff0000,#990000);
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.85);
+display:none;
+justify-content:center;
+align-items:center;
+}
+
+.popupBox{
+background:#111;
+padding:25px;
+border-radius:20px;
 text-align:center;
-margin-top:10px;
+width:90%;
+max-width:350px;
+border:1px solid #ff0000;
 }
 </style>
 </head>
@@ -89,12 +139,24 @@ margin-top:10px;
 <button class="methodBtn nagad" onclick="selectMethod('nagad')">Pay with Nagad</button>
 
 <div class="paymentBox" id="paymentBox">
+
 <div class="amount" id="amountText"></div>
 <div class="number" id="numberText"></div>
+
+<input placeholder="Your In-Game Name">
+<input placeholder="Transaction ID">
+
+<button class="verifyBtn" onclick="verifyPayment()">VERIFY PAYMENT</button>
+
 </div>
 
-<div class="error" id="errorText"></div>
+</div>
 
+<div class="popup" id="popup">
+<div class="popupBox">
+<h3>Payment Submitted</h3>
+<p>We are checking your payment.</p>
+</div>
 </div>
 
 <script>
@@ -102,21 +164,16 @@ margin-top:10px;
 const products = {
 item120:{price:120},
 item250:{price:250},
-item755:{price:755},
-item1500:{price:1500}
+item755:{price:755}
 };
 
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get("id");
 
-if(!id || !products[id]){
-document.getElementById("errorText").innerText =
-"Product not found. Please go back and select product again.";
-}
-
 function selectMethod(method){
 
 if(!products[id]){
+alert("Product not found");
 return;
 }
 
@@ -129,6 +186,10 @@ document.getElementById("numberText").innerText =
 method==="bkash"
 ? "Send Money To: 01861316505 (bKash)"
 : "Send Money To: 01861316505 (Nagad)";
+}
+
+function verifyPayment(){
+document.getElementById("popup").style.display="flex";
 }
 
 </script>
