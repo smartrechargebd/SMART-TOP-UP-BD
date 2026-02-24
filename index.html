@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArenaXFF | Login</title>
+<title>ArenaXFF Admin</title>
 
 <style>
 body{
@@ -10,25 +10,18 @@ margin:0;
 font-family:Segoe UI;
 background:radial-gradient(circle at top,#111,#000);
 color:white;
-display:flex;
-justify-content:center;
-align-items:center;
 min-height:100vh;
 }
 
 .container{
-width:100%;
-max-width:420px;
-background:#0d0d0d;
-padding:30px;
-border-radius:25px;
-box-shadow:0 0 40px rgba(255,0,0,.6);
-border:1px solid rgba(255,0,0,.4);
+max-width:1100px;
+margin:auto;
+padding:20px;
 }
 
 .brand{
 text-align:center;
-font-size:22px;
+font-size:24px;
 color:red;
 font-weight:bold;
 text-shadow:0 0 15px red;
@@ -36,71 +29,123 @@ margin-bottom:25px;
 }
 
 input{
-width:100%;
-padding:14px;
-margin-bottom:15px;
-border-radius:12px;
+padding:10px;
+border-radius:8px;
 border:none;
 background:#000;
 color:white;
 border:1px solid #333;
-}
-
-input:focus{
-outline:none;
-border:1px solid red;
-box-shadow:0 0 10px red;
+margin:5px 0;
+width:100%;
 }
 
 button{
-width:100%;
-padding:14px;
+padding:8px 12px;
 border:none;
-border-radius:12px;
-background:linear-gradient(45deg,#ff0000,#990000);
+border-radius:8px;
+background:red;
 color:white;
-font-weight:bold;
 cursor:pointer;
-margin-top:5px;
-transition:.3s;
+margin:3px 0;
 }
 
 button:hover{
-transform:scale(1.05);
-box-shadow:0 0 15px red;
+box-shadow:0 0 10px red;
 }
 
-.orderCard{
+.card{
 background:#000;
-padding:15px;
-border-radius:15px;
-margin-bottom:15px;
 border:1px solid red;
-font-size:14px;
+padding:15px;
+border-radius:12px;
+margin-bottom:12px;
+}
+
+.tabs{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.tabBtn{
+flex:1;
+background:#111;
+border:1px solid red;
+padding:10px;
+cursor:pointer;
+text-align:center;
+}
+
+.activeTab{
+background:red;
 }
 
 .hidden{display:none;}
+.loginBox{
+max-width:400px;
+margin:100px auto;
+background:#111;
+padding:25px;
+border-radius:20px;
+box-shadow:0 0 30px red;
+}
 </style>
 </head>
 
 <body>
 
-<div class="container" id="loginSection">
-<div class="brand">🔥 ArenaXFF</div>
-<input type="text" id="username" placeholder="Enter Username">
+<div id="loginPage" class="loginBox">
+<div class="brand">🔥 ArenaXFF Admin</div>
+<input id="username" placeholder="Enter Username">
 <button onclick="login()">ENTER</button>
 </div>
 
-<div class="container hidden" id="adminSection">
-<div class="brand">Admin Dashboard</div>
-<div id="ordersList"></div>
-<button onclick="logout()">Logout</button>
+<div id="adminPage" class="container hidden">
+
+<div class="brand">🔥 ArenaXFF Super Admin</div>
+
+<div class="tabs">
+<div class="tabBtn activeTab" onclick="showTab('orders')">Orders</div>
+<div class="tabBtn" onclick="showTab('products')">Products</div>
+<div class="tabBtn" onclick="showTab('coupons')">Coupons</div>
+<div class="tabBtn" onclick="showTab('search')">Search Key</div>
+</div>
+
+<div id="ordersTab"></div>
+
+<div id="productsTab" class="hidden">
+<h3>Add Product</h3>
+<input id="pName" placeholder="Product Name">
+<input id="pPrice" placeholder="Price">
+<input id="pImage" placeholder="Image URL">
+<button onclick="addProduct()">Add Product</button>
+<hr>
+<div id="productList"></div>
+</div>
+
+<div id="couponsTab" class="hidden">
+<h3>Create Coupon</h3>
+<input id="cCode" placeholder="Coupon Code">
+<input id="cValue" placeholder="Discount Value">
+<button onclick="addCoupon()">Create</button>
+<hr>
+<div id="couponList"></div>
+</div>
+
+<div id="searchTab" class="hidden">
+<h3>Search By Key</h3>
+<input id="searchKey" placeholder="Enter Key">
+<button onclick="searchOrder()">Search</button>
+<div id="searchResult"></div>
+</div>
+
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
@@ -114,68 +159,151 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.login = function(){
-
-let user=document.getElementById("username").value.trim();
-
-if(user==="admin"){
-document.getElementById("loginSection").classList.add("hidden");
-document.getElementById("adminSection").classList.remove("hidden");
+window.login=function(){
+if(document.getElementById("username").value==="admin"){
+document.getElementById("loginPage").classList.add("hidden");
+document.getElementById("adminPage").classList.remove("hidden");
 loadOrders();
+loadProducts();
+loadCoupons();
 }
 else{
-window.location.href="home.html";
+alert("Not Admin");
 }
+}
+
+window.showTab=function(tab){
+
+document.querySelectorAll(".tabBtn").forEach(btn=>btn.classList.remove("activeTab"));
+event.target.classList.add("activeTab");
+
+document.getElementById("ordersTab").classList.add("hidden");
+document.getElementById("productsTab").classList.add("hidden");
+document.getElementById("couponsTab").classList.add("hidden");
+document.getElementById("searchTab").classList.add("hidden");
+
+if(tab==="orders"){document.getElementById("ordersTab").classList.remove("hidden");}
+if(tab==="products"){document.getElementById("productsTab").classList.remove("hidden");}
+if(tab==="coupons"){document.getElementById("couponsTab").classList.remove("hidden");}
+if(tab==="search"){document.getElementById("searchTab").classList.remove("hidden");}
 
 }
 
-window.logout = function(){
-location.reload();
-}
+/* ORDERS */
 
 async function loadOrders(){
-
-const querySnapshot = await getDocs(collection(db, "orders"));
-
+const snap=await getDocs(collection(db,"orders"));
 let html="";
-
-querySnapshot.forEach((docSnap)=>{
-
-let data = docSnap.data();
-let id = docSnap.id;
-
-html += `
-<div class="orderCard">
-<b>Product:</b> ${data.productName || "-"}<br>
-<b>Amount:</b> ৳${data.price || "-"}<br>
-<b>Method:</b> ${data.paymentMethod || "-"}<br>
-<b>TRX:</b> ${data.transactionId || "-"}<br>
-<b>Key:</b> ${data.generatedKey || "-"}<br>
-<b>Status:</b> ${data.status || "-"}<br><br>
-
-<button onclick="approveOrder('${id}')">Approve</button>
-<button onclick="rejectOrder('${id}')">Reject</button>
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`
+<div class="card">
+<b>${d.productName}</b><br>
+৳${d.price}<br>
+Method: ${d.paymentMethod}<br>
+TRX: ${d.transactionId}<br>
+Key: ${d.generatedKey}<br>
+Status: ${d.status}<br>
+<button onclick="approve('${docSnap.id}')">Approve</button>
+<button onclick="reject('${docSnap.id}')">Reject</button>
 </div>
 `;
-
 });
-
-document.getElementById("ordersList").innerHTML = html;
-
+document.getElementById("ordersTab").innerHTML=html;
 }
 
-window.approveOrder = async function(orderId){
-await updateDoc(doc(db,"orders",orderId),{
-status:"approved"
-});
+window.approve=async(id)=>{
+await updateDoc(doc(db,"orders",id),{status:"approved"});
 loadOrders();
 }
 
-window.rejectOrder = async function(orderId){
-await updateDoc(doc(db,"orders",orderId),{
-status:"rejected"
-});
+window.reject=async(id)=>{
+await updateDoc(doc(db,"orders",id),{status:"rejected"});
 loadOrders();
+}
+
+/* PRODUCTS */
+
+window.addProduct=async()=>{
+await addDoc(collection(db,"products"),{
+name:pName.value,
+price:pPrice.value,
+image:pImage.value
+});
+loadProducts();
+}
+
+async function loadProducts(){
+const snap=await getDocs(collection(db,"products"));
+let html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`
+<div class="card">
+${d.name} - ৳${d.price}
+<button onclick="deleteProduct('${docSnap.id}')">Delete</button>
+</div>
+`;
+});
+document.getElementById("productList").innerHTML=html;
+}
+
+window.deleteProduct=async(id)=>{
+await deleteDoc(doc(db,"products",id));
+loadProducts();
+}
+
+/* COUPONS */
+
+window.addCoupon=async()=>{
+await addDoc(collection(db,"coupons"),{
+code:cCode.value,
+value:cValue.value
+});
+loadCoupons();
+}
+
+async function loadCoupons(){
+const snap=await getDocs(collection(db,"coupons"));
+let html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`
+<div class="card">
+${d.code} - ${d.value}
+<button onclick="deleteCoupon('${docSnap.id}')">Delete</button>
+</div>
+`;
+});
+document.getElementById("couponList").innerHTML=html;
+}
+
+window.deleteCoupon=async(id)=>{
+await deleteDoc(doc(db,"coupons",id));
+loadCoupons();
+}
+
+/* SEARCH */
+
+window.searchOrder=async()=>{
+let key=document.getElementById("searchKey").value;
+const q=query(collection(db,"orders"),where("generatedKey","==",key));
+const snap=await getDocs(q);
+
+let html="";
+snap.forEach(docSnap=>{
+let d=docSnap.data();
+html+=`
+<div class="card">
+<b>${d.productName}</b><br>
+৳${d.price}<br>
+Method: ${d.paymentMethod}<br>
+TRX: ${d.transactionId}<br>
+Status: ${d.status}
+</div>
+`;
+});
+document.getElementById("searchResult").innerHTML=html || "No Result";
 }
 
 </script>
