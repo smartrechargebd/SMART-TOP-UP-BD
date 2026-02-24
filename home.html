@@ -12,23 +12,32 @@ font-family:Segoe UI;
 background:radial-gradient(circle at top,#0f0f0f,#000);
 color:white;
 min-height:100vh;
+overflow-x:hidden;
 }
+
+/* HEADER */
 
 header{
 text-align:center;
-padding:25px 20px;
-font-size:28px;
+padding:30px 20px 10px;
+font-size:30px;
 font-weight:bold;
 color:#ff1a1a;
 letter-spacing:3px;
-text-shadow:0 0 15px red;
+text-shadow:0 0 20px red;
 }
 
-.sub{
+.tagline{
 text-align:center;
-color:#aaa;
-margin-bottom:20px;
+font-size:13px;
+letter-spacing:5px;
+color:#ff4444;
+margin-bottom:25px;
+text-transform:uppercase;
+text-shadow:0 0 10px rgba(255,0,0,.6);
 }
+
+/* PRODUCTS */
 
 .products{
 max-width:500px;
@@ -87,17 +96,58 @@ font-weight:bold;
 box-shadow:0 0 15px rgba(255,0,0,.6);
 }
 
-.stats{
+/* WHY SECTION */
+
+.why{
+max-width:500px;
+margin:40px auto;
+padding:20px;
+}
+
+.why h2{
 text-align:center;
-margin-top:30px;
-color:#aaa;
+color:#ff1a1a;
+margin-bottom:20px;
+text-shadow:0 0 15px red;
+}
+
+.whyBox{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+.whyItem{
+background:#111;
+padding:15px;
+border-radius:15px;
+text-align:center;
+border:1px solid rgba(255,0,0,.3);
+box-shadow:0 0 15px rgba(255,0,0,.2);
+font-size:14px;
+}
+
+/* LIVE ORDER POPUP */
+
+.liveOrder{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+background:#111;
+padding:12px 20px;
+border-radius:30px;
+border:1px solid red;
+box-shadow:0 0 20px red;
+font-size:14px;
+display:none;
 }
 
 footer{
 text-align:center;
-margin-top:40px;
-padding:20px;
-color:#444;
+margin:40px 0 20px;
+color:#555;
+font-size:13px;
 }
 </style>
 </head>
@@ -105,7 +155,7 @@ color:#444;
 <body>
 
 <header>🔥 ArenaXFF</header>
-<div class="sub">Elite Gaming Store</div>
+<div class="tagline">Elite Gaming Store</div>
 
 <div class="products">
 
@@ -138,13 +188,42 @@ color:#444;
 
 </div>
 
-<div class="stats">
-⭐ 4.9 / 5 (3,000+ Happy Gamers)
+<section class="why">
+<h2>🔥 Why You Choose Us</h2>
+
+<div class="whyBox">
+<div class="whyItem">⚡ Instant Key Delivery</div>
+<div class="whyItem">🔒 100% Secure Payment</div>
+<div class="whyItem">🎮 Trusted By 3000+ Gamers</div>
+<div class="whyItem">💎 Premium Diamond Quality</div>
+<div class="whyItem">🤖 Telegram Auto System</div>
+<div class="whyItem">🛡 Anti-Fraud Protection</div>
 </div>
+</section>
+
+<div class="liveOrder" id="liveOrder"></div>
 
 <footer>
 © 2026 ArenaXFF Official
 </footer>
+
+<script>
+const names=["Rafi","Jamal","Sakib","Arman","Tanvir","Riyad"];
+const items=["Diamond Pack","Item Pack","Monthly Membership"];
+
+function showOrder(){
+let randomName=names[Math.floor(Math.random()*names.length)];
+let randomItem=items[Math.floor(Math.random()*items.length)];
+let box=document.getElementById("liveOrder");
+
+box.innerText=randomName+" just bought "+randomItem;
+box.style.display="block";
+
+setTimeout(()=>{box.style.display="none";},4000);
+}
+
+setInterval(showOrder,8000);
+</script>
 
 </body>
 </html>
