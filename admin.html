@@ -2,192 +2,138 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<title>ArenaXFF Admin</title>
 
 <style>
 body{
 margin:0;
 font-family:Segoe UI;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+background:#000;
 color:white;
+}
+
+.header{
+text-align:center;
+padding:20px;
+font-size:24px;
+color:red;
+text-shadow:0 0 20px red;
+font-weight:bold;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
 padding:20px;
 }
 
-h2{margin-top:0;}
-
-.section{
-background:rgba(255,255,255,0.05);
-padding:20px;
+.card{
+background:#111;
+border:1px solid red;
 border-radius:15px;
-margin-bottom:25px;
-backdrop-filter:blur(10px);
-}
-
-input,select{
-width:100%;
-padding:10px;
-margin:8px 0;
-border:none;
-border-radius:8px;
+padding:15px;
+margin-bottom:15px;
 }
 
 button{
 padding:8px 12px;
+background:red;
+color:white;
 border:none;
-border-radius:8px;
+border-radius:6px;
 cursor:pointer;
-margin:5px 3px;
-font-weight:bold;
 }
 
-.saveBtn{background:#00e676;}
-.deleteBtn{background:red;color:white;}
-.editBtn{background:orange;color:white;}
-.logoutBtn{background:red;color:white;float:right;}
-.passBtn{background:#00c853;color:white;}
+.statBox{
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.stat{
+flex:1;
+min-width:150px;
+background:#111;
+border:1px solid red;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Admin Dashboard 
-<button class="logoutBtn" onclick="logout()">Logout</button>
-</h2>
+<div class="header">🔥 ArenaXFF Admin Panel</div>
 
-<div class="section">
-<h3>Add / Edit Package</h3>
+<div class="container">
 
-<input type="hidden" id="editId">
-
-<input id="title" placeholder="Title">
-<input id="details" placeholder="Details">
-<input id="price" placeholder="Price">
-<input id="image" placeholder="Image URL">
-
-<select id="badge">
-<option value="">No Badge</option>
-<option value="HOT">HOT</option>
-<option value="OFFER">OFFER</option>
-</select>
-
-<button class="saveBtn" onclick="saveProduct()">Save Package</button>
+<div class="statBox">
+<div class="stat">Total Orders<br><span id="totalOrders">0</span></div>
+<div class="stat">Pending<br><span id="pendingOrders">0</span></div>
+<div class="stat">Revenue<br>৳<span id="totalRevenue">0</span></div>
 </div>
 
-<div class="section">
-<h3>All Packages</h3>
-<div id="list"></div>
+<div class="card">
+<h3>Orders</h3>
+<div id="orderList"></div>
 </div>
 
-<div class="section">
-<h3>Change Admin Password</h3>
-<input type="password" id="newPass" placeholder="New Password">
-<button class="passBtn" onclick="changePassword()">Change Password</button>
 </div>
 
 <script type="module">
 
-import { db, collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-if(sessionStorage.getItem("role")!=="admin"){
-window.location="index.html";
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
+  authDomain: "smartrechargebd-eed74.firebaseapp.com",
+  projectId: "smartrechargebd-eed74",
+  storageBucket: "smartrechargebd-eed74.firebasestorage.app",
+  messagingSenderId: "1024026655834",
+  appId: "1:1024026655834:web:c3d836eb5fc411cf77ec63"
+};
 
-let editId=null;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-async function display(){
-const snapshot=await getDocs(collection(db,"products"));
-let box=document.getElementById("list");
-box.innerHTML="";
+async function loadOrders(){
+const snapshot = await getDocs(collection(db,"orders"));
+let total=0,pending=0,revenue=0;
+let html="";
 
 snapshot.forEach(docSnap=>{
-let p=docSnap.data();
-let id=docSnap.id;
+let data = docSnap.data();
+total++;
+if(data.status==="pending") pending++;
+revenue+=Number(data.price || 0);
 
-box.innerHTML+=`
-<div style="background:#111;padding:15px;border-radius:10px;margin:10px 0;">
-<b>${p.title}</b><br>
-${p.details || ""}<br>
-৳${p.price}<br>
-Badge: ${p.badge || "None"}<br>
-
-<button class="editBtn" onclick="editProduct('${id}','${p.title}','${p.details || ""}','${p.price}','${p.badge || ""}','${p.image || ""}')">Edit</button>
-<button class="deleteBtn" onclick="deleteProduct('${id}')">Delete</button>
+html+=`
+<div class="card">
+<b>${data.productName}</b><br>
+৳${data.price}<br>
+Status: ${data.status}<br>
+<button onclick="approve('${docSnap.id}')">Approve</button>
 </div>
 `;
 });
+
+orderList.innerHTML=html;
+totalOrders.innerText=total;
+pendingOrders.innerText=pending;
+totalRevenue.innerText=revenue;
 }
 
-window.saveProduct=async function(){
-
-let title=document.getElementById("title").value;
-let details=document.getElementById("details").value;
-let price=document.getElementById("price").value;
-let badge=document.getElementById("badge").value;
-let image=document.getElementById("image").value;
-
-if(title==="" || price===""){
-alert("Title & Price Required");
-return;
-}
-
-if(editId){
-await updateDoc(doc(db,"products",editId),{
-title,details,price,badge,image
+window.approve=async(id)=>{
+await updateDoc(doc(db,"orders",id),{
+status:"approved"
 });
-editId=null;
-}else{
-await addDoc(collection(db,"products"),{
-title,details,price,badge,image
-});
+loadOrders();
 }
 
-clearForm();
-display();
-}
-
-window.editProduct=function(id,title,details,price,badge,image){
-editId=id;
-document.getElementById("title").value=title;
-document.getElementById("details").value=details;
-document.getElementById("price").value=price;
-document.getElementById("badge").value=badge;
-document.getElementById("image").value=image;
-}
-
-window.deleteProduct=async function(id){
-if(confirm("Delete this package?")){
-await deleteDoc(doc(db,"products",id));
-display();
-}
-}
-
-function clearForm(){
-document.getElementById("title").value="";
-document.getElementById("details").value="";
-document.getElementById("price").value="";
-document.getElementById("badge").value="";
-document.getElementById("image").value="";
-}
-
-window.changePassword=function(){
-let newPass=document.getElementById("newPass").value;
-
-if(newPass.length<5){
-alert("Password too short");
-return;
-}
-
-localStorage.setItem("adminPass",newPass);
-alert("Password Updated Successfully");
-document.getElementById("newPass").value="";
-}
-
-window.logout=function(){
-sessionStorage.clear();
-window.location="index.html";
-}
-
-display();
+loadOrders();
 
 </script>
 
