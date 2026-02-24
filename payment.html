@@ -5,10 +5,15 @@
 <title>ArenaXFF | Secure Payment</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
 body{
-font-family:Segoe UI;
+font-family:'Segoe UI',sans-serif;
 background:radial-gradient(circle at top,#111,#000);
 color:white;
 display:flex;
@@ -18,15 +23,19 @@ min-height:100vh;
 padding:20px;
 }
 
+/* MAIN CONTAINER */
+
 .container{
 width:100%;
 max-width:420px;
 background:#0d0d0d;
 border-radius:25px;
 padding:25px;
-box-shadow:0 0 50px rgba(255,0,0,.5);
-border:1px solid rgba(255,0,0,.3);
+box-shadow:0 0 50px rgba(255,0,0,.6);
+border:1px solid rgba(255,0,0,.4);
 }
+
+/* BRAND */
 
 .brand{
 text-align:center;
@@ -34,16 +43,20 @@ font-size:22px;
 font-weight:bold;
 color:#ff1a1a;
 text-shadow:0 0 10px red;
-margin-bottom:20px;
+margin-bottom:15px;
 }
+
+/* AMOUNT */
 
 .amount{
 text-align:center;
 font-size:26px;
 color:#00ffcc;
 font-weight:bold;
-margin-bottom:15px;
+margin-bottom:18px;
 }
+
+/* METHOD BUTTONS */
 
 .methodBox{
 display:flex;
@@ -59,23 +72,49 @@ border-radius:15px;
 font-weight:bold;
 cursor:pointer;
 color:white;
+transition:.3s;
 }
 
-.bkash{background:linear-gradient(45deg,#ff0055,#ff0000);}
-.nagad{background:linear-gradient(45deg,#ff6600,#ff3300);}
+.bkash{
+background:linear-gradient(45deg,#ff0055,#ff0000);
+}
+
+.nagad{
+background:linear-gradient(45deg,#ff6600,#ff3300);
+}
+
+.methodBtn:hover{
+transform:scale(1.05);
+}
+
+/* NUMBER CARD */
 
 .numberCard{
 display:none;
 margin-top:15px;
-padding:15px;
+padding:18px;
 background:#000;
 border-radius:15px;
-border:1px solid red;
+border:2px solid red;
 text-align:center;
-font-size:18px;
-letter-spacing:1px;
-box-shadow:0 0 15px rgba(255,0,0,.4);
+box-shadow:0 0 20px rgba(255,0,0,.5);
 }
+
+.payNumber{
+font-size:22px;
+font-weight:bold;
+letter-spacing:2px;
+color:#ffffff;
+}
+
+.payNote{
+margin-top:6px;
+font-size:12px;
+color:#aaa;
+letter-spacing:1px;
+}
+
+/* INPUT */
 
 input{
 width:100%;
@@ -86,7 +125,10 @@ border:none;
 background:#000;
 color:white;
 border:1px solid #333;
+font-size:14px;
 }
+
+/* VERIFY BUTTON */
 
 .verifyBtn{
 width:100%;
@@ -98,7 +140,15 @@ background:linear-gradient(45deg,#ff0000,#990000);
 color:white;
 font-weight:bold;
 cursor:pointer;
+transition:.3s;
 }
+
+.verifyBtn:hover{
+transform:scale(1.05);
+box-shadow:0 0 25px red;
+}
+
+/* POPUP */
 
 .popup{
 position:fixed;
@@ -143,6 +193,7 @@ color:white;
 width:100%;
 cursor:pointer;
 }
+
 </style>
 </head>
 
@@ -155,8 +206,8 @@ cursor:pointer;
 <div class="amount" id="amountText"></div>
 
 <div class="methodBox">
-<button class="methodBtn bkash" onclick="selectMethod('bKash')">Pay with bKash</button>
-<button class="methodBtn nagad" onclick="selectMethod('Nagad')">Pay with Nagad</button>
+<button class="methodBtn bkash" onclick="selectMethod()">Pay with bKash</button>
+<button class="methodBtn nagad" onclick="selectMethod()">Pay with Nagad</button>
 </div>
 
 <div class="numberCard" id="numberCard"></div>
@@ -167,13 +218,18 @@ cursor:pointer;
 
 </div>
 
+<!-- POPUP -->
+
 <div class="popup" id="popup">
 <div class="popupBox" id="popupContent">
-<h3 id="statusText">Checking Payment...</h3>
+<h3>Checking Payment...</h3>
 </div>
 </div>
 
 <script>
+
+/* PRODUCTS */
+
 const products = {
 item120:{price:120},
 item250:{price:250},
@@ -187,13 +243,22 @@ document.getElementById("amountText").innerText =
 "Amount: ৳"+products[id].price;
 }
 
-function selectMethod(method){
+/* SHOW NUMBER */
+
+function selectMethod(){
 document.getElementById("numberCard").style.display="block";
-document.getElementById("numberCard").innerHTML =
-"Send ৳"+products[id].price+" to<br><b>01861316505</b><br>via "+method;
+
+document.getElementById("numberCard").innerHTML=
+`
+<div class="payNumber">01861316505</div>
+<div class="payNote">Send Money / Cash In</div>
+`;
 }
 
+/* VERIFY */
+
 function verifyPayment(){
+
 let trx=document.getElementById("trx").value;
 
 if(trx===""){
@@ -206,19 +271,24 @@ document.getElementById("popup").style.display="flex";
 setTimeout(()=>{
 generateKey();
 },3000);
+
 }
 
+/* GENERATE KEY */
+
 function generateKey(){
+
 let key="AXF-"+Math.random().toString(36).substring(2,10).toUpperCase();
 
 document.getElementById("popupContent").innerHTML=
 `
 <h3>Payment Submitted</h3>
-<p>Here is your key</p>
+<p>Your Key:</p>
 <div class="keyBox" id="keyText">${key}</div>
 <button class="actionBtn" onclick="copyKey()">Copy Key</button>
 <button class="actionBtn" onclick="goBot()">Go To Bot</button>
 `;
+
 }
 
 function copyKey(){
@@ -230,6 +300,7 @@ alert("Key Copied");
 function goBot(){
 window.location.href="https://t.me/yourbotusername";
 }
+
 </script>
 
 </body>
