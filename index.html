@@ -87,9 +87,8 @@ font-size:14px;
 
 <div class="container" id="loginSection">
 <div class="brand">🔥 ArenaXFF</div>
-<input type="text" id="username" placeholder="Username">
-<input type="password" id="password" placeholder="Password">
-<button onclick="login()">LOGIN</button>
+<input type="text" id="username" placeholder="Enter Username">
+<button onclick="login()">ENTER</button>
 </div>
 
 <div class="container hidden" id="adminSection">
@@ -103,7 +102,6 @@ font-size:14px;
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 YOUR REAL FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
   authDomain: "smartrechargebd-eed74.firebaseapp.com",
@@ -118,10 +116,9 @@ const db = getFirestore(app);
 
 window.login = function(){
 
-let user=document.getElementById("username").value;
-let pass=document.getElementById("password").value;
+let user=document.getElementById("username").value.trim();
 
-if(user==="admin" && pass==="AXFF2026"){
+if(user==="admin"){
 document.getElementById("loginSection").classList.add("hidden");
 document.getElementById("adminSection").classList.remove("hidden");
 loadOrders();
