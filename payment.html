@@ -1,24 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Payment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Fire Top Up</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
-html,body{
-height:100%;
-min-height:100vh;
-min-height:100dvh;
-background:#0f2027;
-}
-
 body{
 font-family:Segoe UI;
-background:linear-gradient(135deg,#0f2027,#16222a,#203a43);
+background:radial-gradient(circle at top,#111,#000);
 color:white;
-padding:40px 20px env(safe-area-inset-bottom);
+padding:40px 20px;
+min-height:100vh;
 }
 
 .wrapper{
@@ -27,29 +21,23 @@ margin:auto;
 }
 
 .card{
-background:rgba(0,0,0,0.45);
-backdrop-filter:blur(15px);
+background:rgba(20,20,20,.9);
 padding:25px;
 border-radius:20px;
-box-shadow:0 0 30px rgba(0,255,150,.25);
+box-shadow:0 0 40px rgba(0,150,255,.4);
+border:2px solid rgba(0,150,255,.4);
 }
 
-.logo{
-display:flex;
-align-items:center;
-gap:10px;
-margin-bottom:20px;
-}
-
-.logo img{
-width:42px;
+h3{
+color:#00e5ff;
+margin-bottom:10px;
 }
 
 .price{
 color:#00ff99;
-font-size:20px;
+font-size:22px;
 font-weight:bold;
-margin-top:8px;
+margin-top:10px;
 }
 
 input{
@@ -58,14 +46,13 @@ padding:14px;
 margin-top:14px;
 border:none;
 border-radius:12px;
-background:rgba(0,0,0,0.75);
+background:#111;
 color:white;
-font-size:15px;
-outline:none;
+border:1px solid #00e5ff;
 }
 
 input::placeholder{
-color:rgba(255,255,255,.5);
+color:#777;
 }
 
 button{
@@ -77,16 +64,37 @@ font-weight:bold;
 cursor:pointer;
 margin-top:16px;
 font-size:15px;
-}
-
-.confirm{
-background:linear-gradient(45deg,#00e676,#00c853);
-color:black;
-}
-
-.back{
-background:linear-gradient(45deg,#ff1744,#d50000);
+background:linear-gradient(45deg,#00e5ff,#2979ff);
 color:white;
+box-shadow:0 0 15px rgba(0,150,255,.6);
+transition:.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+}
+
+.key-box{
+margin-top:25px;
+padding:20px;
+background:#000;
+border-radius:15px;
+display:none;
+text-align:center;
+border:1px solid #00ff99;
+box-shadow:0 0 20px rgba(0,255,150,.5);
+animation:glow 1.5s infinite alternate;
+}
+
+@keyframes glow{
+from{box-shadow:0 0 15px rgba(0,255,150,.5);}
+to{box-shadow:0 0 30px rgba(0,255,150,1);}
+}
+
+.key-box h2{
+color:#00ff99;
+letter-spacing:2px;
+margin:10px 0;
 }
 </style>
 </head>
@@ -96,27 +104,22 @@ color:white;
 <div class="wrapper">
 <div class="card">
 
-<div class="logo">
-<img src="https://i.postimg.cc/Qxr6kM5f/8E06F917-7C4C-42E5-B43F-B792C3410617.png">
-<h3>Smart Recharge BD</h3>
-</div>
-
+<h3>🔥 Free Fire Top Up</h3>
 <div id="productInfo"></div>
 
 <p style="margin-top:15px;"><b>bKash / Nagad:</b> 01861316505</p>
 
-<input id="name" placeholder="Your Name">
+<input id="name" placeholder="Your In-Game Name">
 <input id="trx" placeholder="Transaction ID">
-<input id="coupon" placeholder="Coupon Code (Optional)">
 
-<button class="confirm" onclick="confirmOrder()">Confirm Payment</button>
-<button class="back" onclick="goBack()">Back</button>
+<button onclick="confirmOrder()">Confirm Payment</button>
+
+<div class="key-box" id="keyBox"></div>
 
 </div>
 </div>
 
 <script type="module">
-
 import { db, doc, getDoc, collection, addDoc } from "./firebase.js";
 
 if(sessionStorage.getItem("role")!=="user"){
@@ -124,77 +127,51 @@ window.location="index.html";
 }
 
 let productId=sessionStorage.getItem("selectedProductId");
-
-if(!productId){
-window.location="home.html";
-}
-
 let productRef=doc(db,"products",productId);
 let productSnap=await getDoc(productRef);
-
-if(!productSnap.exists()){
-alert("Product not found");
-window.location="home.html";
-}
-
 let product=productSnap.data();
 let basePrice=parseInt(product.price);
 
 document.getElementById("productInfo").innerHTML=
-"<h3>"+product.title+"</h3>"+
-"<p>"+(product.details || "")+"</p>"+
+"<h4>"+product.title+"</h4>"+
 "<p class='price'>৳"+basePrice+"</p>";
+
+function generateKey(){
+return "FF"+Math.random().toString(36).substring(2,8).toUpperCase();
+}
 
 window.confirmOrder=async function(){
 
 let name=document.getElementById("name").value.trim();
 let trx=document.getElementById("trx").value.trim();
 let user=sessionStorage.getItem("user");
-let coupon=document.getElementById("coupon").value.trim();
 
 if(!name || !trx){
 alert("Fill all fields");
 return;
 }
 
-let discount=0;
-if(coupon==="SR50"){
-discount=5;
-}
+let key=generateKey();
 
-let finalAmount=basePrice-discount;
-
-try{
 await addDoc(collection(db,"orders"),{
+username:user,
 name:name,
-user:user,
 product:product.title,
-price:finalAmount,
+price:basePrice,
 trx:trx,
-coupon:coupon || "None",
+key:key,
+status:"pending",
 date:new Date()
 });
-}catch(e){
-alert("Firebase error: "+e.message);
-return;
-}
 
-let message="Name: "+name+
-"%0ANumber: "+user+
-"%0AProduct: "+product.title+
-"%0AFinal Price: "+finalAmount+
-"%0ATRX: "+trx+
-"%0ACoupon: "+(coupon||"None");
-
-/* DIRECT REDIRECT (NO BLOCK ISSUE) */
-window.location.href="https://wa.me/8801607254046?text="+message;
+document.getElementById("keyBox").style.display="block";
+document.getElementById("keyBox").innerHTML=
+"<b>🎉 TOP UP REQUEST RECEIVED</b><br><br>"+
+"Your Verification Key:<br>"+
+"<h2>"+key+"</h2>"+
+"Copy this key and paste it in Telegram Bot.";
 
 }
-
-window.goBack=function(){
-window.location="home.html";
-}
-
 </script>
 
 </body>
