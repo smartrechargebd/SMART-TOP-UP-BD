@@ -26,7 +26,7 @@ text-align:center;
 color:#ff3c3c;
 font-size:24px;
 text-shadow:0 0 20px red;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 .amount{
@@ -39,11 +39,11 @@ color:#00ff99;
 button{
 width:100%;
 padding:12px;
-border:none;
 border-radius:10px;
 cursor:pointer;
 margin-bottom:10px;
 font-weight:500;
+border:none;
 }
 
 .methodBtn{
@@ -60,32 +60,33 @@ background:red;
 background:#000;
 border:1px solid red;
 border-radius:15px;
-padding:18px;
+padding:20px;
 text-align:center;
 margin-bottom:15px;
-box-shadow:0 0 30px rgba(255,0,0,.4);
+box-shadow:0 0 30px rgba(255,0,0,.5);
 }
 
 .numberRow{
 display:flex;
 justify-content:center;
 align-items:center;
-gap:8px;
+gap:10px;
 }
 
 .number{
-font-size:20px;
+font-size:22px;
 font-weight:bold;
-color:#00ffcc; /* Premium neon color */
-letter-spacing:1px;
+color:#ffcc00; /* PREMIUM GOLD */
+letter-spacing:2px;
+text-shadow:0 0 10px #ff9900;
 }
 
 .copyBtn{
-font-size:11px;
-padding:3px 6px;
-background:#222;
-color:#ff3c3c;
-border:1px solid red;
+font-size:10px;
+padding:4px 8px;
+background:#111;
+color:#ffcc00;
+border:1px solid #ff9900;
 border-radius:5px;
 cursor:pointer;
 }
@@ -107,7 +108,7 @@ width:100%;
 padding:12px;
 border-radius:10px;
 border:1px solid #333;
-background:#000;
+background:#000;   /* FIX WHITE BUG */
 color:white;
 margin-bottom:10px;
 }
@@ -142,7 +143,6 @@ text-align:center;
 Amount: ৳<span id="finalPrice">120</span>
 </div>
 
-<!-- 🔥 Payment Method FIRST -->
 <button id="bkashBtn" class="methodBtn" onclick="selectMethod('bkash')">
 Pay with bKash
 </button>
@@ -151,7 +151,6 @@ Pay with bKash
 Pay with Nagad
 </button>
 
-<!-- 🔥 Number Box -->
 <div class="payBox">
 
 <div class="numberRow">
@@ -182,7 +181,7 @@ Pay with Nagad
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
@@ -198,75 +197,70 @@ let finalPrice = 120;
 let selectedMethod = "";
 
 window.selectMethod = function(method){
-
 selectedMethod = method;
-
 document.getElementById("bkashBtn").classList.remove("active");
 document.getElementById("nagadBtn").classList.remove("active");
 
 if(method==="bkash"){
 document.getElementById("bkashBtn").classList.add("active");
-document.getElementById("selectedText").innerText = "bKash Selected";
+document.getElementById("selectedText").innerText="bKash Selected";
 }else{
 document.getElementById("nagadBtn").classList.add("active");
-document.getElementById("selectedText").innerText = "Nagad Selected";
+document.getElementById("selectedText").innerText="Nagad Selected";
 }
-
 }
 
 window.applyCoupon = async function(){
 
-let code = document.getElementById("couponInput").value.trim().toUpperCase();
+let code=document.getElementById("couponInput").value.trim().toUpperCase();
 
 if(!code){
 alert("Enter Coupon Code");
 return;
 }
 
-const q = query(collection(db,"coupons"), where("code","==",code));
-const snap = await getDocs(q);
+const q=query(collection(db,"coupons"),where("code","==",code));
+const snap=await getDocs(q);
 
 if(snap.empty){
 alert("Invalid Coupon");
 return;
 }
 
-snap.forEach(docSnap=>{
-let data = docSnap.data();
+snap.forEach(async(docSnap)=>{
+let data=docSnap.data();
 
-if(data.status !== "active"){
+if(data.status!=="active"){
 alert("Coupon Not Active");
 return;
 }
 
-if(data.used >= data.usageLimit){
+if(data.used>=data.usageLimit){
 alert("Coupon Limit Reached");
 return;
 }
 
-if(data.expiry && Date.now() > data.expiry){
-alert("Coupon Expired");
-return;
-}
+finalPrice=basePrice-Number(data.value);
+if(finalPrice<0) finalPrice=0;
 
-finalPrice = basePrice - Number(data.value);
-if(finalPrice < 0) finalPrice = 0;
+document.getElementById("finalPrice").innerText=finalPrice;
 
-document.getElementById("finalPrice").innerText = finalPrice;
+await updateDoc(doc(db,"coupons",docSnap.id),{
+used:data.used+1
+});
 
 alert("Coupon Applied Successfully");
 });
-
 }
 
-window.submitPayment = async function(){
+window.submitPayment=async function(){
 
 if(!selectedMethod){
 alert("Select Payment Method");
 return;
 }
 
-let trx = document.getElementById("trxInput").value.trim();
+let trx=document.getElementById("trxInput").value.trim();
 
 if(!trx){
 alert("Enter Transaction ID");
@@ -275,35 +269,24 @@ return;
 
 document.getElementById("processing").classList.remove("hidden");
 
-const q = query(collection(db,"orders"), where("transactionId","==",trx));
-const existing = await getDocs(q);
-
-if(!existing.empty){
-document.getElementById("processing").classList.add("hidden");
-alert("Transaction ID already used");
-return;
-}
-
-let key = "AXFF-" + Math.random().toString(36).substring(2,8).toUpperCase();
+let key="AXFF-"+Math.random().toString(36).substring(2,8).toUpperCase();
 
 await addDoc(collection(db,"orders"),{
-productName: "Free Fire 120 Diamond",
-price: finalPrice,
-paymentMethod: selectedMethod,
-transactionId: trx,
-generatedKey: key,
-status: "pending",
-createdAt: Date.now()
+price:finalPrice,
+paymentMethod:selectedMethod,
+transactionId:trx,
+generatedKey:key,
+status:"pending",
+createdAt:Date.now()
 });
 
 document.getElementById("processing").classList.add("hidden");
-
-document.getElementById("generatedKey").innerText = key;
+document.getElementById("generatedKey").innerText=key;
 document.getElementById("keySection").classList.remove("hidden");
 
 }
 
-window.copyNumber = function(){
+window.copyNumber=function(){
 navigator.clipboard.writeText("01861316505");
 alert("Number Copied");
 }
