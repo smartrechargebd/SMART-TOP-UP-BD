@@ -2,68 +2,67 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secure Payment</title>
+<title>ArenaXFF | Secure Payment</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-font-family:Segoe UI;
-background:linear-gradient(135deg,#000,#0f0f0f,#111);
-color:white;
-min-height:100vh;
+font-family:Segoe UI, sans-serif;
+background:radial-gradient(circle at top,#0f0f1a,#000);
 display:flex;
 justify-content:center;
 align-items:center;
+min-height:100vh;
+color:white;
 padding:20px;
 }
 
-.container{
+.card{
 width:100%;
 max-width:420px;
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(20px);
 border-radius:25px;
 padding:25px;
-box-shadow:0 0 40px rgba(0,255,255,0.3);
-border:1px solid rgba(255,255,255,0.1);
-animation:fadeIn 0.6s ease;
+background:linear-gradient(145deg,#7a00ff,#2b00ff);
+box-shadow:0 0 40px rgba(123,0,255,.6);
+transition:0.3s;
 }
 
-@keyframes fadeIn{
-from{opacity:0;transform:scale(0.9);}
-to{opacity:1;transform:scale(1);}
+.card.nagad{
+background:linear-gradient(145deg,#ff6600,#ff3300);
+box-shadow:0 0 40px rgba(255,100,0,.6);
 }
 
-.logo{
+.brand{
 text-align:center;
-font-size:20px;
+font-size:22px;
 font-weight:bold;
-margin-bottom:10px;
+letter-spacing:2px;
+margin-bottom:15px;
+color:#00f7ff;
 }
 
 .method{
 text-align:center;
-font-size:22px;
-font-weight:bold;
+font-size:18px;
 margin-bottom:10px;
 }
 
-.price{
+.amount{
 text-align:center;
 font-size:28px;
 font-weight:bold;
-margin-bottom:20px;
+margin:10px 0 20px;
+color:#00ffcc;
 }
 
 .numberBox{
-background:rgba(255,255,255,0.08);
-padding:15px;
-border-radius:15px;
+background:rgba(255,255,255,0.1);
+padding:14px;
+border-radius:14px;
 text-align:center;
-margin-bottom:20px;
-font-size:18px;
-letter-spacing:1px;
+font-weight:bold;
+margin-bottom:15px;
 }
 
 input{
@@ -83,42 +82,99 @@ padding:15px;
 margin-top:18px;
 border:none;
 border-radius:18px;
-font-size:16px;
+font-size:15px;
 font-weight:bold;
 cursor:pointer;
 transition:0.3s;
 }
 
-button:hover{
+.verifyBtn{
+background:linear-gradient(45deg,#00f7ff,#0066ff);
+color:white;
+}
+
+.verifyBtn:hover{
 transform:scale(1.05);
 }
 
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.85);
+display:none;
+justify-content:center;
+align-items:center;
+}
+
+.popupBox{
+background:#111;
+padding:25px;
+border-radius:20px;
+text-align:center;
+width:90%;
+max-width:350px;
+box-shadow:0 0 30px rgba(0,255,255,.4);
+}
+
+.key{
+font-size:20px;
+color:#00ff99;
+margin:15px 0;
+letter-spacing:2px;
+}
+
+.copyBtn{
+background:#00ff99;
+color:black;
+margin-top:10px;
+}
+
+.botBtn{
+background:#0088cc;
+color:white;
+margin-top:10px;
+}
 </style>
 </head>
+
 <body>
 
-<div class="container">
+<div class="card" id="card">
 
-<div class="logo">🔥 SMART TOP UP BD</div>
+<div class="brand">🔥 ArenaXFF</div>
 
 <div class="method" id="methodTitle"></div>
-<div class="price" id="priceText"></div>
+<div class="amount" id="amountText"></div>
 
-<div class="numberBox" id="paymentNumber"></div>
+<div class="numberBox" id="numberText"></div>
 
-<input placeholder="Your Game Name">
+<input placeholder="Your In-Game Name">
 <input placeholder="Transaction ID">
 
-<button id="confirmBtn">VERIFY PAYMENT</button>
+<button class="verifyBtn" onclick="verifyPayment()">VERIFY PAYMENT</button>
 
+</div>
+
+<div class="popup" id="popup">
+<div class="popupBox">
+<h3>We are checking your payment</h3>
+<p>Your Verification Key:</p>
+<div class="key" id="keyText"></div>
+<button class="copyBtn" onclick="copyKey()">Copy Key</button>
+<button class="botBtn" onclick="goToBot()">Go To Bot</button>
+</div>
 </div>
 
 <script>
 
 const products = {
-ff2500:{title:"2500 Diamond",price:1500},
-ffmonthly:{title:"Free Fire Monthly",price:755},
-ff1000:{title:"1000 Diamond",price:650}
+item120:{title:"Item Pack",price:120},
+item250:{title:"Diamond Pack",price:250},
+item755:{title:"Monthly Pack",price:755},
+item1500:{title:"2500 Diamonds",price:1500}
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -127,19 +183,38 @@ const id = urlParams.get("id");
 
 const product = products[id];
 
-document.getElementById("priceText").innerText = "৳" + product.price;
-document.getElementById("paymentNumber").innerText =
-method === "bkash" ? "bKash: 01861316505" : "Nagad: 01861316505";
-
 document.getElementById("methodTitle").innerText =
-method === "bkash" ? "bKash Payment" : "Nagad Payment";
+method==="bkash" ? "bKash Payment" : "Nagad Payment";
 
-if(method==="bkash"){
-document.getElementById("confirmBtn").style.background=
-"linear-gradient(45deg,#ff0066,#ff3399)";
-}else{
-document.getElementById("confirmBtn").style.background=
-"linear-gradient(45deg,#ff6600,#ff9900)";
+document.getElementById("amountText").innerText =
+"৳"+product.price;
+
+document.getElementById("numberText").innerText =
+method==="bkash" ? "bKash: 01861316505" : "Nagad: 01861316505";
+
+if(method==="nagad"){
+document.getElementById("card").classList.add("nagad");
+}
+
+function generateKey(){
+return "AXFF"+Math.random().toString(36).substring(2,8).toUpperCase();
+}
+
+function verifyPayment(){
+const key = generateKey();
+document.getElementById("keyText").innerText = key;
+document.getElementById("popup").style.display="flex";
+}
+
+function copyKey(){
+navigator.clipboard.writeText(
+document.getElementById("keyText").innerText
+);
+alert("Key Copied Successfully");
+}
+
+function goToBot(){
+window.location.href="https://t.me/YOUR_BOT_USERNAME";
 }
 
 </script>
