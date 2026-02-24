@@ -24,19 +24,58 @@ border:1px solid red;
 border-radius:20px;
 padding:25px;
 box-shadow:0 0 40px rgba(255,0,0,.4);
-text-align:center;
 }
 
 h2{
+text-align:center;
 color:red;
 text-shadow:0 0 15px red;
-margin-bottom:10px;
 }
 
 .amount{
+text-align:center;
 font-size:22px;
 margin-bottom:15px;
 color:#00ff99;
+}
+
+.payBox{
+background:#000;
+border:1px solid red;
+padding:12px;
+border-radius:10px;
+margin-bottom:12px;
+text-align:center;
+}
+
+.number{
+font-size:18px;
+font-weight:bold;
+}
+
+.small{
+font-size:12px;
+color:#aaa;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:6px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:red;
+color:white;
+}
+
+.methodBtn{
+background:#111;
+border:1px solid red;
+}
+
+.selected{
+background:red !important;
 }
 
 input{
@@ -46,51 +85,10 @@ border-radius:8px;
 border:1px solid #333;
 background:#000;
 color:white;
-margin-bottom:10px;
-}
-
-button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
-background:red;
-color:white;
-cursor:pointer;
-margin-top:6px;
-}
-
-.methodBtn{
-background:#111;
-border:1px solid red;
-}
-
-.selected{
-box-shadow:0 0 15px red;
-}
-
-.infoBox{
-background:#000;
-border:1px solid red;
-padding:10px;
-border-radius:8px;
-margin-bottom:10px;
+margin-top:8px;
 }
 
 .hidden{display:none;}
-
-.keyBox{
-margin-top:15px;
-background:#000;
-border:1px solid #00ff99;
-padding:12px;
-border-radius:10px;
-}
-
-.processing{
-margin-top:10px;
-color:#ffaa00;
-}
 </style>
 </head>
 
@@ -102,25 +100,33 @@ color:#ffaa00;
 
 <div class="amount">Amount: ৳<span id="finalPrice">120</span></div>
 
-<input id="couponInput" placeholder="Enter Promo Code">
+<div class="payBox">
+<div class="number" id="payNumber">01861316505</div>
+<button onclick="copyNumber()">Copy Number</button>
+<div class="small">Send Money / Cash In</div>
+</div>
+
+<button class="methodBtn" id="bkashBtn" onclick="selectMethod('bkash')">
+Pay with bKash
+</button>
+
+<button class="methodBtn" id="nagadBtn" onclick="selectMethod('nagad')">
+Pay with Nagad
+</button>
+
+<div id="selectedText" class="small" style="margin-top:6px;"></div>
+
+<input id="couponInput" placeholder="Enter Coupon Code">
 <button onclick="applyCoupon()">Apply Coupon</button>
 
-<button class="methodBtn" onclick="selectMethod('bkash')">Pay with bKash</button>
-<button class="methodBtn" onclick="selectMethod('nagad')">Pay with Nagad</button>
-
-<div id="paymentInfo" class="hidden infoBox"></div>
-
 <input id="trxInput" placeholder="Enter Transaction ID">
-
 <button onclick="submitPayment()">VERIFY PAYMENT</button>
 
-<div id="processing" class="hidden processing">⏳ Checking Payment...</div>
+<div id="processing" class="hidden">Checking Payment...</div>
 
-<div id="keySection" class="hidden keyBox">
+<div id="keySection" class="hidden">
 <p>Your Key:</p>
-<b id="generatedKey"></b><br><br>
-<button onclick="copyKey()">Copy Key</button>
-<button onclick="goBot()">Go To Bot</button>
+<b id="generatedKey"></b>
 </div>
 
 </div>
@@ -128,15 +134,12 @@ color:#ffaa00;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
   authDomain: "smartrechargebd-eed74.firebaseapp.com",
   projectId: "smartrechargebd-eed74",
-  storageBucket: "smartrechargebd-eed74.firebasestorage.app",
-  messagingSenderId: "1024026655834",
-  appId: "1:1024026655834:web:c3d836eb5fc411cf77ec63"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -145,36 +148,27 @@ const db = getFirestore(app);
 let basePrice = 120;
 let finalPrice = 120;
 let selectedMethod = "";
-let appliedCoupon = null;
-let productName = "Free Fire 120 Diamond";
 
-/* Payment Method */
 window.selectMethod = function(method){
 
 selectedMethod = method;
 
-document.querySelectorAll(".methodBtn").forEach(b=>b.classList.remove("selected"));
-event.target.classList.add("selected");
-
-paymentInfo.classList.remove("hidden");
+document.getElementById("bkashBtn").classList.remove("selected");
+document.getElementById("nagadBtn").classList.remove("selected");
 
 if(method==="bkash"){
-paymentInfo.innerHTML = "Send ৳"+finalPrice+" to <b>01861316505</b><br>Method: Send Money";
+document.getElementById("bkashBtn").classList.add("selected");
+selectedText.innerText = "bKash Selected";
 }else{
-paymentInfo.innerHTML = "Send ৳"+finalPrice+" to <b>01861316505</b><br>Method: Cash In";
+document.getElementById("nagadBtn").classList.add("selected");
+selectedText.innerText = "Nagad Selected";
 }
 
 }
 
-/* Coupon System */
 window.applyCoupon = async function(){
 
 let code = couponInput.value.trim().toUpperCase();
-
-if(!code){
-alert("Enter Coupon Code");
-return;
-}
 
 const q = query(collection(db,"coupons"), where("code","==",code));
 const snap = await getDocs(q);
@@ -187,39 +181,22 @@ return;
 snap.forEach(docSnap=>{
 let data = docSnap.data();
 
-if(data.status !== "active"){
-alert("Coupon Not Active");
-return;
-}
-
 if(data.used >= data.usageLimit){
 alert("Coupon Limit Reached");
 return;
 }
 
-if(data.expiry && Date.now() > data.expiry){
-alert("Coupon Expired");
-return;
-}
-
-appliedCoupon = docSnap.id;
-
 finalPrice = basePrice - data.value;
 if(finalPrice < 0) finalPrice = 0;
 
-document.getElementById("finalPrice").innerText = finalPrice;
+finalPriceSpan = document.getElementById("finalPrice");
+finalPriceSpan.innerText = finalPrice;
 
-alert("Coupon Applied Successfully");
+alert("Coupon Applied");
 });
 
 }
 
-/* Key Generator */
-function generateKey(){
-return "AXFF-" + Math.random().toString(36).substring(2,8).toUpperCase();
-}
-
-/* Submit Payment */
 window.submitPayment = async function(){
 
 if(!selectedMethod){
@@ -236,37 +213,26 @@ return;
 
 processing.classList.remove("hidden");
 
-/* Duplicate TRX Check */
 const q = query(collection(db,"orders"), where("transactionId","==",trx));
 const existing = await getDocs(q);
 
 if(!existing.empty){
 processing.classList.add("hidden");
-alert("This Transaction ID already used!");
+alert("Transaction ID already used");
 return;
 }
 
-/* Save Order */
-let key = generateKey();
+let key = "AXFF-" + Math.random().toString(36).substring(2,8).toUpperCase();
 
 await addDoc(collection(db,"orders"),{
-productName: productName,
+productName: "Free Fire 120 Diamond",
 price: finalPrice,
 paymentMethod: selectedMethod,
 transactionId: trx,
 generatedKey: key,
 status: "pending",
-telegramId: "",
-coupon: appliedCoupon || "",
 createdAt: Date.now()
 });
-
-/* Increment Coupon Usage */
-if(appliedCoupon){
-await updateDoc(doc(db,"coupons",appliedCoupon),{
-used: increment(1)
-});
-}
 
 processing.classList.add("hidden");
 
@@ -275,15 +241,9 @@ keySection.classList.remove("hidden");
 
 }
 
-/* Copy Key */
-window.copyKey = function(){
-navigator.clipboard.writeText(generatedKey.innerText);
-alert("Key Copied");
-}
-
-/* Go To Bot */
-window.goBot = function(){
-window.location.href="https://t.me/YOUR_BOT_USERNAME";
+window.copyNumber = function(){
+navigator.clipboard.writeText("01861316505");
+alert("Number Copied");
 }
 
 </script>
