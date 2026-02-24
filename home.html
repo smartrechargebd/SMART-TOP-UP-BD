@@ -2,151 +2,88 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArenaXFF | Official Store</title>
+<title>ArenaXFF - Elite Gaming Store</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-
 body{
+margin:0;
 font-family:Segoe UI;
-background:radial-gradient(circle at top,#0f0f0f,#000);
+background:radial-gradient(circle at top,#1a0000,#000);
 color:white;
-min-height:100vh;
-overflow-x:hidden;
 }
 
-/* HEADER */
-
-header{
+.header{
 text-align:center;
-padding:30px 20px 10px;
-font-size:30px;
-font-weight:bold;
-color:#ff1a1a;
-letter-spacing:3px;
+padding:20px;
+color:#ff3c3c;
+font-size:26px;
 text-shadow:0 0 20px red;
 }
 
-.tagline{
-text-align:center;
-font-size:13px;
-letter-spacing:5px;
-color:#ff4444;
-margin-bottom:25px;
-text-transform:uppercase;
-text-shadow:0 0 10px rgba(255,0,0,.6);
+.section{
+padding:20px;
 }
-
-/* PRODUCTS */
 
 .products{
-max-width:500px;
-margin:auto;
-padding:20px;
-display:flex;
-flex-direction:column;
-gap:25px;
-}
-
-.card{
-background:#111;
-border-radius:20px;
-overflow:hidden;
-box-shadow:0 0 35px rgba(255,0,0,.4);
-border:1px solid rgba(255,0,0,.3);
-transition:.3s;
-}
-
-.card:hover{
-transform:scale(1.03);
-box-shadow:0 0 60px rgba(255,0,0,.8);
-}
-
-.card img{
-width:100%;
-height:220px;
-object-fit:cover;
-}
-
-.card-body{
-padding:18px;
-}
-
-.card h3{
-color:#ff4444;
-margin-bottom:8px;
-}
-
-.price{
-font-size:20px;
-color:#00ffcc;
-font-weight:bold;
-margin-bottom:12px;
-}
-
-.buyBtn{
-display:block;
-text-align:center;
-padding:13px;
-background:linear-gradient(45deg,#ff0000,#990000);
-border-radius:15px;
-color:white;
-text-decoration:none;
-font-weight:bold;
-box-shadow:0 0 15px rgba(255,0,0,.6);
-}
-
-/* WHY SECTION */
-
-.why{
-max-width:500px;
-margin:40px auto;
-padding:20px;
-}
-
-.why h2{
-text-align:center;
-color:#ff1a1a;
-margin-bottom:20px;
-text-shadow:0 0 15px red;
-}
-
-.whyBox{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:15px;
 }
 
-.whyItem{
-background:#111;
-padding:15px;
-border-radius:15px;
-text-align:center;
-border:1px solid rgba(255,0,0,.3);
-box-shadow:0 0 15px rgba(255,0,0,.2);
-font-size:14px;
-}
-
-/* LIVE ORDER POPUP */
-
-.liveOrder{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-background:#111;
-padding:12px 20px;
-border-radius:30px;
+.card{
+background:#000;
 border:1px solid red;
-box-shadow:0 0 20px red;
-font-size:14px;
-display:none;
+border-radius:15px;
+padding:15px;
+text-align:center;
+box-shadow:0 0 25px rgba(255,0,0,.4);
 }
 
-footer{
+.card img{
+width:100%;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.price{
+color:#00ff99;
+font-size:18px;
+margin:5px 0;
+}
+
+.buyBtn{
+background:red;
+color:white;
+padding:10px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+width:100%;
+}
+
+.why{
+background:#000;
+border-top:1px solid red;
+margin-top:30px;
+padding:20px;
+}
+
+.why h2{
+color:#ff3c3c;
 text-align:center;
-margin:40px 0 20px;
-color:#555;
+margin-bottom:15px;
+}
+
+.reason{
+margin-bottom:10px;
+font-size:14px;
+color:#ccc;
+}
+
+.footer{
+text-align:center;
+padding:15px;
+color:#666;
 font-size:13px;
 }
 </style>
@@ -154,76 +91,74 @@ font-size:13px;
 
 <body>
 
-<header>🔥 ArenaXFF</header>
-<div class="tagline">Elite Gaming Store</div>
+<div class="header">
+🔥 ArenaXFF <br>
+<span style="font-size:14px;color:#00ff99;">Elite Gaming Store</span>
+</div>
+
+<div class="section">
+
+<h3 style="color:#ff3c3c;">🔥 Popular Products</h3>
 
 <div class="products">
 
 <div class="card">
-<img src="images/item120.jpg">
-<div class="card-body">
-<h3>Free Fire Item Pack</h3>
+<img src="https://i.ibb.co/3m5Zc2k/ff1.jpg">
+<h4>Free Fire 120 Diamond</h4>
 <div class="price">৳120</div>
-<a class="buyBtn" href="payment.html?id=item120">BUY NOW</a>
-</div>
+<button class="buyBtn"
+onclick="window.location.href='payment.html?price=120&product=FF120'">
+Buy Now
+</button>
 </div>
 
 <div class="card">
-<img src="images/diamond250.jpg">
-<div class="card-body">
-<h3>Diamond Pack</h3>
+<img src="https://i.ibb.co/F4tPkW1/ff2.jpg">
+<h4>Free Fire 250 Diamond</h4>
 <div class="price">৳250</div>
-<a class="buyBtn" href="payment.html?id=item250">BUY NOW</a>
-</div>
+<button class="buyBtn"
+onclick="window.location.href='payment.html?price=250&product=FF250'">
+Buy Now
+</button>
 </div>
 
 <div class="card">
-<img src="images/monthly.jpg">
-<div class="card-body">
-<h3>Monthly Membership</h3>
+<img src="https://i.ibb.co/7zB1V2V/ff3.jpg">
+<h4>Free Fire 500 Diamond</h4>
+<div class="price">৳480</div>
+<button class="buyBtn"
+onclick="window.location.href='payment.html?price=480&product=FF500'">
+Buy Now
+</button>
+</div>
+
+<div class="card">
+<img src="https://i.ibb.co/ZHnXvHG/ff4.jpg">
+<h4>Free Fire Monthly</h4>
 <div class="price">৳755</div>
-<a class="buyBtn" href="payment.html?id=item755">BUY NOW</a>
+<button class="buyBtn"
+onclick="window.location.href='payment.html?price=755&product=FFMONTHLY'">
+Buy Now
+</button>
+</div>
+
 </div>
 </div>
 
+<div class="why">
+<h2>Why Choose Us?</h2>
+
+<div class="reason">✔ Instant Key Delivery System</div>
+<div class="reason">✔ 100% Secure Payment (bKash / Nagad)</div>
+<div class="reason">✔ Trusted Gaming Store</div>
+<div class="reason">✔ Fast Support via Telegram</div>
+<div class="reason">✔ Premium Gaming Experience</div>
+
 </div>
 
-<section class="why">
-<h2>🔥 Why You Choose Us</h2>
-
-<div class="whyBox">
-<div class="whyItem">⚡ Instant Key Delivery</div>
-<div class="whyItem">🔒 100% Secure Payment</div>
-<div class="whyItem">🎮 Trusted By 3000+ Gamers</div>
-<div class="whyItem">💎 Premium Diamond Quality</div>
-<div class="whyItem">🤖 Telegram Auto System</div>
-<div class="whyItem">🛡 Anti-Fraud Protection</div>
+<div class="footer">
+© 2026 ArenaXFF - All Rights Reserved
 </div>
-</section>
-
-<div class="liveOrder" id="liveOrder"></div>
-
-<footer>
-© 2026 ArenaXFF Official
-</footer>
-
-<script>
-const names=["Rafi","Jamal","Sakib","Arman","Tanvir","Riyad"];
-const items=["Diamond Pack","Item Pack","Monthly Membership"];
-
-function showOrder(){
-let randomName=names[Math.floor(Math.random()*names.length)];
-let randomItem=items[Math.floor(Math.random()*items.length)];
-let box=document.getElementById("liveOrder");
-
-box.innerText=randomName+" just bought "+randomItem;
-box.style.display="block";
-
-setTimeout(()=>{box.style.display="none";},4000);
-}
-
-setInterval(showOrder,8000);
-</script>
 
 </body>
 </html>
