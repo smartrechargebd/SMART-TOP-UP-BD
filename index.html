@@ -2,308 +2,107 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArenaXFF Admin</title>
+<title>ArenaXFF</title>
 
 <style>
 body{
 margin:0;
+background:radial-gradient(circle at top,#140000,#000);
 font-family:Segoe UI;
-background:radial-gradient(circle at top,#111,#000);
 color:white;
-min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
-
-.brand{
+.loginBox{
+background:#0d0d0d;
+padding:35px;
+border-radius:25px;
+box-shadow:0 0 50px rgba(255,0,0,.6);
+border:1px solid rgba(255,0,0,.4);
+width:90%;
+max-width:420px;
 text-align:center;
-font-size:24px;
-color:red;
+}
+
+.logo{
+font-size:26px;
 font-weight:bold;
-text-shadow:0 0 15px red;
+color:red;
+text-shadow:0 0 20px red;
 margin-bottom:25px;
+cursor:pointer;
 }
 
 input{
-padding:10px;
-border-radius:8px;
+width:100%;
+padding:12px;
+border-radius:10px;
 border:none;
 background:#000;
 color:white;
 border:1px solid #333;
-margin:5px 0;
-width:100%;
+margin-bottom:15px;
 }
 
 button{
-padding:8px 12px;
+width:100%;
+padding:12px;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:red;
 color:white;
 cursor:pointer;
-margin:3px 0;
-}
-
-button:hover{
-box-shadow:0 0 10px red;
-}
-
-.card{
-background:#000;
-border:1px solid red;
-padding:15px;
-border-radius:12px;
-margin-bottom:12px;
-}
-
-.tabs{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-margin-bottom:20px;
-}
-
-.tabBtn{
-flex:1;
-background:#111;
-border:1px solid red;
-padding:10px;
-cursor:pointer;
-text-align:center;
-}
-
-.activeTab{
-background:red;
 }
 
 .hidden{display:none;}
-.loginBox{
-max-width:400px;
-margin:100px auto;
-background:#111;
-padding:25px;
-border-radius:20px;
-box-shadow:0 0 30px red;
-}
 </style>
 </head>
 
 <body>
 
-<div id="loginPage" class="loginBox">
-<div class="brand">🔥 ArenaXFF Admin</div>
+<div class="loginBox">
+
+<div class="logo" onclick="logoClick()">🔥 ArenaXFF</div>
+
 <input id="username" placeholder="Enter Username">
-<button onclick="login()">ENTER</button>
-</div>
+<button onclick="userLogin()">ENTER</button>
 
-<div id="adminPage" class="container hidden">
-
-<div class="brand">🔥 ArenaXFF Super Admin</div>
-
-<div class="tabs">
-<div class="tabBtn activeTab" onclick="showTab('orders')">Orders</div>
-<div class="tabBtn" onclick="showTab('products')">Products</div>
-<div class="tabBtn" onclick="showTab('coupons')">Coupons</div>
-<div class="tabBtn" onclick="showTab('search')">Search Key</div>
-</div>
-
-<div id="ordersTab"></div>
-
-<div id="productsTab" class="hidden">
-<h3>Add Product</h3>
-<input id="pName" placeholder="Product Name">
-<input id="pPrice" placeholder="Price">
-<input id="pImage" placeholder="Image URL">
-<button onclick="addProduct()">Add Product</button>
-<hr>
-<div id="productList"></div>
-</div>
-
-<div id="couponsTab" class="hidden">
-<h3>Create Coupon</h3>
-<input id="cCode" placeholder="Coupon Code">
-<input id="cValue" placeholder="Discount Value">
-<button onclick="addCoupon()">Create</button>
-<hr>
-<div id="couponList"></div>
-</div>
-
-<div id="searchTab" class="hidden">
-<h3>Search By Key</h3>
-<input id="searchKey" placeholder="Enter Key">
-<button onclick="searchOrder()">Search</button>
-<div id="searchResult"></div>
+<div id="adminBox" class="hidden">
+<input id="adminPass" type="password" placeholder="Admin Password">
+<button onclick="adminLogin()">ADMIN LOGIN</button>
 </div>
 
 </div>
 
-<script type="module">
+<script>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+let clickCount=0;
+let adminPassword="AXFF2026";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAKaUhhUIANTMux62xhNFyXdct8xdyzvfg",
-  authDomain: "smartrechargebd-eed74.firebaseapp.com",
-  projectId: "smartrechargebd-eed74",
-  storageBucket: "smartrechargebd-eed74.firebasestorage.app",
-  messagingSenderId: "1024026655834",
-  appId: "1:1024026655834:web:c3d836eb5fc411cf77ec63"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.login=function(){
-if(document.getElementById("username").value==="admin"){
-document.getElementById("loginPage").classList.add("hidden");
-document.getElementById("adminPage").classList.remove("hidden");
-loadOrders();
-loadProducts();
-loadCoupons();
+function userLogin(){
+if(username.value.trim()==""){
+alert("Enter Username");
+return;
 }
-else{
-alert("Not Admin");
+window.location.href="home.html";
+}
+
+function logoClick(){
+clickCount++;
+if(clickCount===3){
+document.getElementById("adminBox").classList.remove("hidden");
 }
 }
 
-window.showTab=function(tab){
-
-document.querySelectorAll(".tabBtn").forEach(btn=>btn.classList.remove("activeTab"));
-event.target.classList.add("activeTab");
-
-document.getElementById("ordersTab").classList.add("hidden");
-document.getElementById("productsTab").classList.add("hidden");
-document.getElementById("couponsTab").classList.add("hidden");
-document.getElementById("searchTab").classList.add("hidden");
-
-if(tab==="orders"){document.getElementById("ordersTab").classList.remove("hidden");}
-if(tab==="products"){document.getElementById("productsTab").classList.remove("hidden");}
-if(tab==="coupons"){document.getElementById("couponsTab").classList.remove("hidden");}
-if(tab==="search"){document.getElementById("searchTab").classList.remove("hidden");}
-
+function adminLogin(){
+if(adminPass.value===adminPassword){
+window.location.href="admin.html";
+}else{
+alert("Wrong Password");
 }
-
-/* ORDERS */
-
-async function loadOrders(){
-const snap=await getDocs(collection(db,"orders"));
-let html="";
-snap.forEach(docSnap=>{
-let d=docSnap.data();
-html+=`
-<div class="card">
-<b>${d.productName}</b><br>
-৳${d.price}<br>
-Method: ${d.paymentMethod}<br>
-TRX: ${d.transactionId}<br>
-Key: ${d.generatedKey}<br>
-Status: ${d.status}<br>
-<button onclick="approve('${docSnap.id}')">Approve</button>
-<button onclick="reject('${docSnap.id}')">Reject</button>
-</div>
-`;
-});
-document.getElementById("ordersTab").innerHTML=html;
-}
-
-window.approve=async(id)=>{
-await updateDoc(doc(db,"orders",id),{status:"approved"});
-loadOrders();
-}
-
-window.reject=async(id)=>{
-await updateDoc(doc(db,"orders",id),{status:"rejected"});
-loadOrders();
-}
-
-/* PRODUCTS */
-
-window.addProduct=async()=>{
-await addDoc(collection(db,"products"),{
-name:pName.value,
-price:pPrice.value,
-image:pImage.value
-});
-loadProducts();
-}
-
-async function loadProducts(){
-const snap=await getDocs(collection(db,"products"));
-let html="";
-snap.forEach(docSnap=>{
-let d=docSnap.data();
-html+=`
-<div class="card">
-${d.name} - ৳${d.price}
-<button onclick="deleteProduct('${docSnap.id}')">Delete</button>
-</div>
-`;
-});
-document.getElementById("productList").innerHTML=html;
-}
-
-window.deleteProduct=async(id)=>{
-await deleteDoc(doc(db,"products",id));
-loadProducts();
-}
-
-/* COUPONS */
-
-window.addCoupon=async()=>{
-await addDoc(collection(db,"coupons"),{
-code:cCode.value,
-value:cValue.value
-});
-loadCoupons();
-}
-
-async function loadCoupons(){
-const snap=await getDocs(collection(db,"coupons"));
-let html="";
-snap.forEach(docSnap=>{
-let d=docSnap.data();
-html+=`
-<div class="card">
-${d.code} - ${d.value}
-<button onclick="deleteCoupon('${docSnap.id}')">Delete</button>
-</div>
-`;
-});
-document.getElementById("couponList").innerHTML=html;
-}
-
-window.deleteCoupon=async(id)=>{
-await deleteDoc(doc(db,"coupons",id));
-loadCoupons();
-}
-
-/* SEARCH */
-
-window.searchOrder=async()=>{
-let key=document.getElementById("searchKey").value;
-const q=query(collection(db,"orders"),where("generatedKey","==",key));
-const snap=await getDocs(q);
-
-let html="";
-snap.forEach(docSnap=>{
-let d=docSnap.data();
-html+=`
-<div class="card">
-<b>${d.productName}</b><br>
-৳${d.price}<br>
-Method: ${d.paymentMethod}<br>
-TRX: ${d.transactionId}<br>
-Status: ${d.status}
-</div>
-`;
-});
-document.getElementById("searchResult").innerHTML=html || "No Result";
 }
 
 </script>
