@@ -16,25 +16,22 @@ align-items:center;
 min-height:100vh;
 }
 
-.box{
+.container{
 width:90%;
 max-width:420px;
-background:#0d0d0d;
-border:1px solid red;
-border-radius:20px;
-padding:25px;
-box-shadow:0 0 40px rgba(255,0,0,.4);
 }
 
-h2{
+.title{
 text-align:center;
 color:red;
+font-size:22px;
 text-shadow:0 0 15px red;
+margin-bottom:15px;
 }
 
 .amount{
 text-align:center;
-font-size:22px;
+font-size:20px;
 margin-bottom:15px;
 color:#00ff99;
 }
@@ -42,40 +39,60 @@ color:#00ff99;
 .payBox{
 background:#000;
 border:1px solid red;
-padding:12px;
-border-radius:10px;
-margin-bottom:12px;
+border-radius:12px;
+padding:15px;
 text-align:center;
+margin-bottom:15px;
+box-shadow:0 0 25px rgba(255,0,0,.4);
+}
+
+.numberRow{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
 }
 
 .number{
-font-size:18px;
+font-size:20px;
 font-weight:bold;
 }
 
-.small{
+.copyBtn{
 font-size:12px;
-color:#aaa;
+padding:5px 8px;
+background:red;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.neon{
+font-size:12px;
+color:#00ffff;
+margin-top:5px;
+}
+
+.selectedText{
+font-size:12px;
+color:#00ff99;
+margin-top:5px;
 }
 
 button{
 width:100%;
 padding:10px;
-margin-top:6px;
 border:none;
 border-radius:8px;
-cursor:pointer;
-background:red;
-color:white;
-}
-
-.methodBtn{
 background:#111;
+color:white;
+margin-bottom:8px;
+cursor:pointer;
 border:1px solid red;
 }
 
-.selected{
-background:red !important;
+button.active{
+background:red;
 }
 
 input{
@@ -85,46 +102,68 @@ border-radius:8px;
 border:1px solid #333;
 background:#000;
 color:white;
-margin-top:8px;
+margin-bottom:8px;
 }
 
-.hidden{display:none;}
+.verifyBtn{
+background:red;
+border:none;
+}
+
+.hidden{
+display:none;
+}
+
+.keyBox{
+margin-top:10px;
+background:#000;
+border:1px solid #00ff99;
+padding:12px;
+border-radius:8px;
+text-align:center;
+}
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
 
-<h2>🔥 ArenaXFF</h2>
+<div class="title">🔥 ArenaXFF</div>
 
-<div class="amount">Amount: ৳<span id="finalPrice">120</span></div>
-
-<div class="payBox">
-<div class="number" id="payNumber">01861316505</div>
-<button onclick="copyNumber()">Copy Number</button>
-<div class="small">Send Money / Cash In</div>
+<div class="amount">
+Amount: ৳<span id="finalPrice">120</span>
 </div>
 
-<button class="methodBtn" id="bkashBtn" onclick="selectMethod('bkash')">
+<div class="payBox">
+
+<div class="numberRow">
+<div class="number">01861316505</div>
+<button class="copyBtn" onclick="copyNumber()">Copy</button>
+</div>
+
+<div class="neon">Send Money / Cash In</div>
+<div id="selectedText" class="selectedText"></div>
+
+</div>
+
+<button id="bkashBtn" onclick="selectMethod('bkash')">
 Pay with bKash
 </button>
 
-<button class="methodBtn" id="nagadBtn" onclick="selectMethod('nagad')">
+<button id="nagadBtn" onclick="selectMethod('nagad')">
 Pay with Nagad
 </button>
-
-<div id="selectedText" class="small" style="margin-top:6px;"></div>
 
 <input id="couponInput" placeholder="Enter Coupon Code">
 <button onclick="applyCoupon()">Apply Coupon</button>
 
 <input id="trxInput" placeholder="Enter Transaction ID">
-<button onclick="submitPayment()">VERIFY PAYMENT</button>
+<button class="verifyBtn" onclick="submitPayment()">VERIFY PAYMENT</button>
 
 <div id="processing" class="hidden">Checking Payment...</div>
 
-<div id="keySection" class="hidden">
+<div id="keySection" class="hidden keyBox">
 <p>Your Key:</p>
 <b id="generatedKey"></b>
 </div>
@@ -153,22 +192,27 @@ window.selectMethod = function(method){
 
 selectedMethod = method;
 
-document.getElementById("bkashBtn").classList.remove("selected");
-document.getElementById("nagadBtn").classList.remove("selected");
+document.getElementById("bkashBtn").classList.remove("active");
+document.getElementById("nagadBtn").classList.remove("active");
 
 if(method==="bkash"){
-document.getElementById("bkashBtn").classList.add("selected");
-selectedText.innerText = "bKash Selected";
+document.getElementById("bkashBtn").classList.add("active");
+document.getElementById("selectedText").innerText = "bKash Selected";
 }else{
-document.getElementById("nagadBtn").classList.add("selected");
-selectedText.innerText = "Nagad Selected";
+document.getElementById("nagadBtn").classList.add("active");
+document.getElementById("selectedText").innerText = "Nagad Selected";
 }
 
 }
 
 window.applyCoupon = async function(){
 
-let code = couponInput.value.trim().toUpperCase();
+let code = document.getElementById("couponInput").value.trim().toUpperCase();
+
+if(!code){
+alert("Enter Coupon Code");
+return;
+}
 
 const q = query(collection(db,"coupons"), where("code","==",code));
 const snap = await getDocs(q);
@@ -181,18 +225,27 @@ return;
 snap.forEach(docSnap=>{
 let data = docSnap.data();
 
+if(data.status !== "active"){
+alert("Coupon Not Active");
+return;
+}
+
 if(data.used >= data.usageLimit){
 alert("Coupon Limit Reached");
 return;
 }
 
-finalPrice = basePrice - data.value;
+if(data.expiry && Date.now() > data.expiry){
+alert("Coupon Expired");
+return;
+}
+
+finalPrice = basePrice - Number(data.value);
 if(finalPrice < 0) finalPrice = 0;
 
-finalPriceSpan = document.getElementById("finalPrice");
-finalPriceSpan.innerText = finalPrice;
+document.getElementById("finalPrice").innerText = finalPrice;
 
-alert("Coupon Applied");
+alert("Coupon Applied Successfully");
 });
 
 }
@@ -204,20 +257,20 @@ alert("Select Payment Method");
 return;
 }
 
-let trx = trxInput.value.trim();
+let trx = document.getElementById("trxInput").value.trim();
 
 if(!trx){
 alert("Enter Transaction ID");
 return;
 }
 
-processing.classList.remove("hidden");
+document.getElementById("processing").classList.remove("hidden");
 
 const q = query(collection(db,"orders"), where("transactionId","==",trx));
 const existing = await getDocs(q);
 
 if(!existing.empty){
-processing.classList.add("hidden");
+document.getElementById("processing").classList.add("hidden");
 alert("Transaction ID already used");
 return;
 }
@@ -234,10 +287,10 @@ status: "pending",
 createdAt: Date.now()
 });
 
-processing.classList.add("hidden");
+document.getElementById("processing").classList.add("hidden");
 
-generatedKey.innerText = key;
-keySection.classList.remove("hidden");
+document.getElementById("generatedKey").innerText = key;
+document.getElementById("keySection").classList.remove("hidden");
 
 }
 
