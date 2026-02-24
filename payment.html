@@ -2,99 +2,115 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArenaXFF | Secure Payment</title>
+<title>ArenaXFF | Payment</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-font-family:Segoe UI, sans-serif;
-background:radial-gradient(circle at top,#0f0f1a,#000);
+font-family:Segoe UI;
+background:radial-gradient(circle at top,#111,#000);
+color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 min-height:100vh;
-color:white;
 padding:20px;
 }
 
-.card{
+.container{
 width:100%;
 max-width:420px;
+background:#0d0d0d;
 border-radius:25px;
 padding:25px;
-background:linear-gradient(145deg,#7a00ff,#2b00ff);
-box-shadow:0 0 40px rgba(123,0,255,.6);
-transition:0.3s;
-}
-
-.card.nagad{
-background:linear-gradient(145deg,#ff6600,#ff3300);
-box-shadow:0 0 40px rgba(255,100,0,.6);
+box-shadow:0 0 40px rgba(255,0,0,.4);
+border:1px solid rgba(255,0,0,.3);
 }
 
 .brand{
 text-align:center;
-font-size:22px;
+font-size:24px;
 font-weight:bold;
+color:#ff0000;
 letter-spacing:2px;
-margin-bottom:15px;
-color:#00f7ff;
+margin-bottom:20px;
 }
 
-.method{
+.selectBox{
 text-align:center;
-font-size:18px;
-margin-bottom:10px;
+margin-bottom:20px;
+}
+
+.methodBtn{
+width:100%;
+padding:15px;
+margin-top:10px;
+border:none;
+border-radius:15px;
+font-weight:bold;
+font-size:16px;
+cursor:pointer;
+transition:.3s;
+}
+
+.bkash{
+background:linear-gradient(45deg,#ff0055,#ff0000);
+color:white;
+}
+
+.nagad{
+background:linear-gradient(45deg,#ff6600,#ff3300);
+color:white;
+}
+
+.methodBtn:hover{
+transform:scale(1.05);
+}
+
+.paymentBox{
+display:none;
+margin-top:20px;
 }
 
 .amount{
+font-size:26px;
 text-align:center;
-font-size:28px;
+margin:10px 0;
+color:#ff3333;
 font-weight:bold;
-margin:10px 0 20px;
-color:#00ffcc;
 }
 
-.numberBox{
-background:rgba(255,255,255,0.1);
-padding:14px;
-border-radius:14px;
+.number{
+background:#111;
+padding:12px;
+border-radius:12px;
 text-align:center;
-font-weight:bold;
 margin-bottom:15px;
+border:1px solid #ff0000;
 }
 
 input{
 width:100%;
 padding:14px;
 margin-top:12px;
-border:none;
 border-radius:14px;
-background:rgba(0,0,0,0.7);
+border:none;
+background:#111;
 color:white;
-border:1px solid rgba(255,255,255,0.2);
+border:1px solid #333;
 }
 
-button{
+.verifyBtn{
 width:100%;
 padding:15px;
 margin-top:18px;
 border:none;
 border-radius:18px;
-font-size:15px;
+background:linear-gradient(45deg,#ff0000,#990000);
+color:white;
 font-weight:bold;
 cursor:pointer;
-transition:0.3s;
-}
-
-.verifyBtn{
-background:linear-gradient(45deg,#00f7ff,#0066ff);
-color:white;
-}
-
-.verifyBtn:hover{
-transform:scale(1.05);
 }
 
 .popup{
@@ -116,7 +132,8 @@ border-radius:20px;
 text-align:center;
 width:90%;
 max-width:350px;
-box-shadow:0 0 30px rgba(0,255,255,.4);
+border:1px solid #ff0000;
+box-shadow:0 0 30px rgba(255,0,0,.5);
 }
 
 .key{
@@ -129,27 +146,41 @@ letter-spacing:2px;
 .copyBtn{
 background:#00ff99;
 color:black;
+padding:10px;
+border:none;
+border-radius:10px;
 margin-top:10px;
+cursor:pointer;
 }
 
 .botBtn{
 background:#0088cc;
 color:white;
+padding:10px;
+border:none;
+border-radius:10px;
 margin-top:10px;
+cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card" id="card">
+<div class="container">
 
 <div class="brand">🔥 ArenaXFF</div>
 
-<div class="method" id="methodTitle"></div>
-<div class="amount" id="amountText"></div>
+<div class="selectBox">
+<h3>Select Payment Method</h3>
+<button class="methodBtn bkash" onclick="selectMethod('bkash')">Pay with bKash</button>
+<button class="methodBtn nagad" onclick="selectMethod('nagad')">Pay with Nagad</button>
+</div>
 
-<div class="numberBox" id="numberText"></div>
+<div class="paymentBox" id="paymentBox">
+
+<div class="amount" id="amountText"></div>
+<div class="number" id="numberText"></div>
 
 <input placeholder="Your In-Game Name">
 <input placeholder="Transaction ID">
@@ -158,9 +189,11 @@ margin-top:10px;
 
 </div>
 
+</div>
+
 <div class="popup" id="popup">
 <div class="popupBox">
-<h3>We are checking your payment</h3>
+<h3>Payment Under Review</h3>
 <p>Your Verification Key:</p>
 <div class="key" id="keyText"></div>
 <button class="copyBtn" onclick="copyKey()">Copy Key</button>
@@ -171,29 +204,25 @@ margin-top:10px;
 <script>
 
 const products = {
-item120:{title:"Item Pack",price:120},
-item250:{title:"Diamond Pack",price:250},
-item755:{title:"Monthly Pack",price:755},
-item1500:{title:"2500 Diamonds",price:1500}
+item120:{price:120},
+item250:{price:250},
+item755:{price:755},
+item1500:{price:1500}
 };
 
 const urlParams = new URLSearchParams(window.location.search);
-const method = urlParams.get("method");
 const id = urlParams.get("id");
-
 const product = products[id];
 
-document.getElementById("methodTitle").innerText =
-method==="bkash" ? "bKash Payment" : "Nagad Payment";
+let selectedMethod = "";
 
-document.getElementById("amountText").innerText =
-"৳"+product.price;
-
+function selectMethod(method){
+selectedMethod = method;
+document.getElementById("paymentBox").style.display="block";
+document.getElementById("amountText").innerText = "৳"+product.price;
 document.getElementById("numberText").innerText =
-method==="bkash" ? "bKash: 01861316505" : "Nagad: 01861316505";
-
-if(method==="nagad"){
-document.getElementById("card").classList.add("nagad");
+method==="bkash" ? "Send Money To: 01861316505 (bKash)" :
+"Send Money To: 01861316505 (Nagad)";
 }
 
 function generateKey(){
@@ -210,7 +239,7 @@ function copyKey(){
 navigator.clipboard.writeText(
 document.getElementById("keyText").innerText
 );
-alert("Key Copied Successfully");
+alert("Key Copied");
 }
 
 function goToBot(){
