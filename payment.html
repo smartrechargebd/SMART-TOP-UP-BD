@@ -24,69 +24,66 @@ max-width:420px;
 background:#0d0d0d;
 border-radius:25px;
 padding:25px;
-box-shadow:0 0 40px rgba(255,0,0,.4);
+box-shadow:0 0 50px rgba(255,0,0,.5);
 border:1px solid rgba(255,0,0,.3);
-transition:.3s;
 }
 
 .brand{
 text-align:center;
-font-size:24px;
+font-size:22px;
 font-weight:bold;
-color:#ff0000;
+color:#ff1a1a;
+text-shadow:0 0 10px red;
 margin-bottom:20px;
 }
 
+.amount{
+text-align:center;
+font-size:26px;
+color:#00ffcc;
+font-weight:bold;
+margin-bottom:15px;
+}
+
+.methodBox{
+display:flex;
+gap:10px;
+margin-bottom:15px;
+}
+
 .methodBtn{
-width:100%;
-padding:15px;
-margin-top:10px;
+flex:1;
+padding:12px;
 border:none;
 border-radius:15px;
 font-weight:bold;
-font-size:16px;
 cursor:pointer;
-}
-
-.bkash{
-background:linear-gradient(45deg,#ff0055,#ff0000);
 color:white;
 }
 
-.nagad{
-background:linear-gradient(45deg,#ff6600,#ff3300);
-color:white;
-}
+.bkash{background:linear-gradient(45deg,#ff0055,#ff0000);}
+.nagad{background:linear-gradient(45deg,#ff6600,#ff3300);}
 
-.paymentBox{
+.numberCard{
 display:none;
-margin-top:20px;
-}
-
-.amount{
-font-size:26px;
+margin-top:15px;
+padding:15px;
+background:#000;
+border-radius:15px;
+border:1px solid red;
 text-align:center;
-margin:10px 0;
-color:#00ffcc;
-font-weight:bold;
-}
-
-.number{
-background:#111;
-padding:12px;
-border-radius:12px;
-text-align:center;
-margin-bottom:15px;
-border:1px solid #ff0000;
+font-size:18px;
+letter-spacing:1px;
+box-shadow:0 0 15px rgba(255,0,0,.4);
 }
 
 input{
 width:100%;
 padding:14px;
-margin-top:12px;
+margin-top:15px;
 border-radius:14px;
 border:none;
-background:#111;
+background:#000;
 color:white;
 border:1px solid #333;
 }
@@ -109,7 +106,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,.85);
+background:rgba(0,0,0,.9);
 display:none;
 justify-content:center;
 align-items:center;
@@ -122,7 +119,29 @@ border-radius:20px;
 text-align:center;
 width:90%;
 max-width:350px;
-border:1px solid #ff0000;
+border:1px solid red;
+box-shadow:0 0 40px red;
+}
+
+.keyBox{
+margin-top:15px;
+padding:10px;
+background:#000;
+border-radius:10px;
+border:1px solid red;
+font-weight:bold;
+color:#00ffcc;
+}
+
+.actionBtn{
+margin-top:12px;
+padding:10px;
+border:none;
+border-radius:12px;
+background:red;
+color:white;
+width:100%;
+cursor:pointer;
 }
 </style>
 </head>
@@ -133,65 +152,84 @@ border:1px solid #ff0000;
 
 <div class="brand">🔥 ArenaXFF</div>
 
-<h3>Select Payment Method</h3>
-
-<button class="methodBtn bkash" onclick="selectMethod('bkash')">Pay with bKash</button>
-<button class="methodBtn nagad" onclick="selectMethod('nagad')">Pay with Nagad</button>
-
-<div class="paymentBox" id="paymentBox">
-
 <div class="amount" id="amountText"></div>
-<div class="number" id="numberText"></div>
 
-<input placeholder="Your In-Game Name">
-<input placeholder="Transaction ID">
+<div class="methodBox">
+<button class="methodBtn bkash" onclick="selectMethod('bKash')">Pay with bKash</button>
+<button class="methodBtn nagad" onclick="selectMethod('Nagad')">Pay with Nagad</button>
+</div>
+
+<div class="numberCard" id="numberCard"></div>
+
+<input id="trx" placeholder="Enter Transaction ID">
 
 <button class="verifyBtn" onclick="verifyPayment()">VERIFY PAYMENT</button>
 
 </div>
 
-</div>
-
 <div class="popup" id="popup">
-<div class="popupBox">
-<h3>Payment Submitted</h3>
-<p>We are checking your payment.</p>
+<div class="popupBox" id="popupContent">
+<h3 id="statusText">Checking Payment...</h3>
 </div>
 </div>
 
 <script>
-
 const products = {
 item120:{price:120},
 item250:{price:250},
 item755:{price:755}
 };
 
-const urlParams = new URLSearchParams(window.location.search);
-const id = urlParams.get("id");
+const id = new URLSearchParams(window.location.search).get("id");
 
-function selectMethod(method){
-
-if(!products[id]){
-alert("Product not found");
-return;
-}
-
-document.getElementById("paymentBox").style.display="block";
-
+if(products[id]){
 document.getElementById("amountText").innerText =
 "Amount: ৳"+products[id].price;
+}
 
-document.getElementById("numberText").innerText =
-method==="bkash"
-? "Send Money To: 01861316505 (bKash)"
-: "Send Money To: 01861316505 (Nagad)";
+function selectMethod(method){
+document.getElementById("numberCard").style.display="block";
+document.getElementById("numberCard").innerHTML =
+"Send ৳"+products[id].price+" to<br><b>01861316505</b><br>via "+method;
 }
 
 function verifyPayment(){
-document.getElementById("popup").style.display="flex";
+let trx=document.getElementById("trx").value;
+
+if(trx===""){
+alert("Enter Transaction ID");
+return;
 }
 
+document.getElementById("popup").style.display="flex";
+
+setTimeout(()=>{
+generateKey();
+},3000);
+}
+
+function generateKey(){
+let key="AXF-"+Math.random().toString(36).substring(2,10).toUpperCase();
+
+document.getElementById("popupContent").innerHTML=
+`
+<h3>Payment Submitted</h3>
+<p>Here is your key</p>
+<div class="keyBox" id="keyText">${key}</div>
+<button class="actionBtn" onclick="copyKey()">Copy Key</button>
+<button class="actionBtn" onclick="goBot()">Go To Bot</button>
+`;
+}
+
+function copyKey(){
+let text=document.getElementById("keyText").innerText;
+navigator.clipboard.writeText(text);
+alert("Key Copied");
+}
+
+function goBot(){
+window.location.href="https://t.me/yourbotusername";
+}
 </script>
 
 </body>
