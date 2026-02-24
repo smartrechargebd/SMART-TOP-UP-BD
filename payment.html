@@ -2,176 +2,146 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Fire Top Up</title>
+<title>Secure Payment</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
 font-family:Segoe UI;
-background:radial-gradient(circle at top,#111,#000);
+background:linear-gradient(135deg,#000,#0f0f0f,#111);
 color:white;
-padding:40px 20px;
 min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
 }
 
-.wrapper{
+.container{
+width:100%;
 max-width:420px;
-margin:auto;
-}
-
-.card{
-background:rgba(20,20,20,.9);
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(20px);
+border-radius:25px;
 padding:25px;
-border-radius:20px;
-box-shadow:0 0 40px rgba(0,150,255,.4);
-border:2px solid rgba(0,150,255,.4);
+box-shadow:0 0 40px rgba(0,255,255,0.3);
+border:1px solid rgba(255,255,255,0.1);
+animation:fadeIn 0.6s ease;
 }
 
-h3{
-color:#00e5ff;
+@keyframes fadeIn{
+from{opacity:0;transform:scale(0.9);}
+to{opacity:1;transform:scale(1);}
+}
+
+.logo{
+text-align:center;
+font-size:20px;
+font-weight:bold;
+margin-bottom:10px;
+}
+
+.method{
+text-align:center;
+font-size:22px;
+font-weight:bold;
 margin-bottom:10px;
 }
 
 .price{
-color:#00ff99;
-font-size:22px;
+text-align:center;
+font-size:28px;
 font-weight:bold;
-margin-top:10px;
+margin-bottom:20px;
+}
+
+.numberBox{
+background:rgba(255,255,255,0.08);
+padding:15px;
+border-radius:15px;
+text-align:center;
+margin-bottom:20px;
+font-size:18px;
+letter-spacing:1px;
 }
 
 input{
 width:100%;
 padding:14px;
-margin-top:14px;
+margin-top:12px;
 border:none;
-border-radius:12px;
-background:#111;
+border-radius:14px;
+background:rgba(0,0,0,0.7);
 color:white;
-border:1px solid #00e5ff;
-}
-
-input::placeholder{
-color:#777;
+border:1px solid rgba(255,255,255,0.2);
 }
 
 button{
 width:100%;
-padding:14px;
+padding:15px;
+margin-top:18px;
 border:none;
-border-radius:14px;
+border-radius:18px;
+font-size:16px;
 font-weight:bold;
 cursor:pointer;
-margin-top:16px;
-font-size:15px;
-background:linear-gradient(45deg,#00e5ff,#2979ff);
-color:white;
-box-shadow:0 0 15px rgba(0,150,255,.6);
-transition:.3s;
+transition:0.3s;
 }
 
 button:hover{
 transform:scale(1.05);
 }
 
-.key-box{
-margin-top:25px;
-padding:20px;
-background:#000;
-border-radius:15px;
-display:none;
-text-align:center;
-border:1px solid #00ff99;
-box-shadow:0 0 20px rgba(0,255,150,.5);
-animation:glow 1.5s infinite alternate;
-}
-
-@keyframes glow{
-from{box-shadow:0 0 15px rgba(0,255,150,.5);}
-to{box-shadow:0 0 30px rgba(0,255,150,1);}
-}
-
-.key-box h2{
-color:#00ff99;
-letter-spacing:2px;
-margin:10px 0;
-}
 </style>
 </head>
-
 <body>
 
-<div class="wrapper">
-<div class="card">
+<div class="container">
 
-<h3>🔥 Free Fire Top Up</h3>
-<div id="productInfo"></div>
+<div class="logo">🔥 SMART TOP UP BD</div>
 
-<p style="margin-top:15px;"><b>bKash / Nagad:</b> 01861316505</p>
+<div class="method" id="methodTitle"></div>
+<div class="price" id="priceText"></div>
 
-<input id="name" placeholder="Your In-Game Name">
-<input id="trx" placeholder="Transaction ID">
+<div class="numberBox" id="paymentNumber"></div>
 
-<button onclick="confirmOrder()">Confirm Payment</button>
+<input placeholder="Your Game Name">
+<input placeholder="Transaction ID">
 
-<div class="key-box" id="keyBox"></div>
+<button id="confirmBtn">VERIFY PAYMENT</button>
 
 </div>
-</div>
 
-<script type="module">
-import { db, doc, getDoc, collection, addDoc } from "./firebase.js";
+<script>
 
-if(sessionStorage.getItem("role")!=="user"){
-window.location="index.html";
+const products = {
+ff2500:{title:"2500 Diamond",price:1500},
+ffmonthly:{title:"Free Fire Monthly",price:755},
+ff1000:{title:"1000 Diamond",price:650}
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const method = urlParams.get("method");
+const id = urlParams.get("id");
+
+const product = products[id];
+
+document.getElementById("priceText").innerText = "৳" + product.price;
+document.getElementById("paymentNumber").innerText =
+method === "bkash" ? "bKash: 01861316505" : "Nagad: 01861316505";
+
+document.getElementById("methodTitle").innerText =
+method === "bkash" ? "bKash Payment" : "Nagad Payment";
+
+if(method==="bkash"){
+document.getElementById("confirmBtn").style.background=
+"linear-gradient(45deg,#ff0066,#ff3399)";
+}else{
+document.getElementById("confirmBtn").style.background=
+"linear-gradient(45deg,#ff6600,#ff9900)";
 }
 
-let productId=sessionStorage.getItem("selectedProductId");
-let productRef=doc(db,"products",productId);
-let productSnap=await getDoc(productRef);
-let product=productSnap.data();
-let basePrice=parseInt(product.price);
-
-document.getElementById("productInfo").innerHTML=
-"<h4>"+product.title+"</h4>"+
-"<p class='price'>৳"+basePrice+"</p>";
-
-function generateKey(){
-return "FF"+Math.random().toString(36).substring(2,8).toUpperCase();
-}
-
-window.confirmOrder=async function(){
-
-let name=document.getElementById("name").value.trim();
-let trx=document.getElementById("trx").value.trim();
-let user=sessionStorage.getItem("user");
-
-if(!name || !trx){
-alert("Fill all fields");
-return;
-}
-
-let key=generateKey();
-
-await addDoc(collection(db,"orders"),{
-username:user,
-name:name,
-product:product.title,
-price:basePrice,
-trx:trx,
-key:key,
-status:"pending",
-date:new Date()
-});
-
-document.getElementById("keyBox").style.display="block";
-document.getElementById("keyBox").innerHTML=
-"<b>🎉 TOP UP REQUEST RECEIVED</b><br><br>"+
-"Your Verification Key:<br>"+
-"<h2>"+key+"</h2>"+
-"Copy this key and paste it in Telegram Bot.";
-
-}
 </script>
 
 </body>
