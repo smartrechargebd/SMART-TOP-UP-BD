@@ -23,9 +23,9 @@ max-width:420px;
 
 .title{
 text-align:center;
-color:red;
-font-size:22px;
-text-shadow:0 0 15px red;
+color:#ff3c3c;
+font-size:24px;
+text-shadow:0 0 20px red;
 margin-bottom:15px;
 }
 
@@ -36,33 +36,56 @@ margin-bottom:15px;
 color:#00ff99;
 }
 
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+margin-bottom:10px;
+font-weight:500;
+}
+
+.methodBtn{
+background:#111;
+border:1px solid red;
+color:white;
+}
+
+.methodBtn.active{
+background:red;
+}
+
 .payBox{
 background:#000;
 border:1px solid red;
-border-radius:12px;
-padding:15px;
+border-radius:15px;
+padding:18px;
 text-align:center;
 margin-bottom:15px;
-box-shadow:0 0 25px rgba(255,0,0,.4);
+box-shadow:0 0 30px rgba(255,0,0,.4);
 }
 
 .numberRow{
 display:flex;
 justify-content:center;
 align-items:center;
-gap:10px;
+gap:8px;
 }
 
 .number{
 font-size:20px;
 font-weight:bold;
+color:#00ffcc; /* Premium neon color */
+letter-spacing:1px;
 }
 
 .copyBtn{
-font-size:12px;
-padding:5px 8px;
-background:red;
-border:none;
+font-size:11px;
+padding:3px 6px;
+background:#222;
+color:#ff3c3c;
+border:1px solid red;
 border-radius:5px;
 cursor:pointer;
 }
@@ -70,7 +93,7 @@ cursor:pointer;
 .neon{
 font-size:12px;
 color:#00ffff;
-margin-top:5px;
+margin-top:6px;
 }
 
 .selectedText{
@@ -79,35 +102,19 @@ color:#00ff99;
 margin-top:5px;
 }
 
-button{
-width:100%;
-padding:10px;
-border:none;
-border-radius:8px;
-background:#111;
-color:white;
-margin-bottom:8px;
-cursor:pointer;
-border:1px solid red;
-}
-
-button.active{
-background:red;
-}
-
 input{
 width:100%;
-padding:10px;
-border-radius:8px;
+padding:12px;
+border-radius:10px;
 border:1px solid #333;
 background:#000;
 color:white;
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 .verifyBtn{
 background:red;
-border:none;
+color:white;
 }
 
 .hidden{
@@ -119,7 +126,7 @@ margin-top:10px;
 background:#000;
 border:1px solid #00ff99;
 padding:12px;
-border-radius:8px;
+border-radius:10px;
 text-align:center;
 }
 </style>
@@ -135,6 +142,16 @@ text-align:center;
 Amount: ৳<span id="finalPrice">120</span>
 </div>
 
+<!-- 🔥 Payment Method FIRST -->
+<button id="bkashBtn" class="methodBtn" onclick="selectMethod('bkash')">
+Pay with bKash
+</button>
+
+<button id="nagadBtn" class="methodBtn" onclick="selectMethod('nagad')">
+Pay with Nagad
+</button>
+
+<!-- 🔥 Number Box -->
 <div class="payBox">
 
 <div class="numberRow">
@@ -146,14 +163,6 @@ Amount: ৳<span id="finalPrice">120</span>
 <div id="selectedText" class="selectedText"></div>
 
 </div>
-
-<button id="bkashBtn" onclick="selectMethod('bkash')">
-Pay with bKash
-</button>
-
-<button id="nagadBtn" onclick="selectMethod('nagad')">
-Pay with Nagad
-</button>
 
 <input id="couponInput" placeholder="Enter Coupon Code">
 <button onclick="applyCoupon()">Apply Coupon</button>
